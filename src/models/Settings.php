@@ -17,7 +17,7 @@ class Settings extends Model
     public $logOutputFile;
     public $defaultMediaType = "screen";
     public $defaultPaperSize = "A4";
-    public $defaultPaperOrientation = "landscape";
+    public $defaultPaperOrientation = "portrait";
     public $defaultFont = "arial";
     public $dpi = 96;
     public $fontHeightRatio = 1.1;
