@@ -1,0 +1,39 @@
+{
+	"name": "amici/craft-super-pdf",
+	"description": "Create PDF files from html",
+	"version": "1.0.0",
+	"type": "craft-plugin",
+	"keywords": ["craft", "cms", "craftcms", "craft-plugin","pdf", "amici", "dompdf", "twig-to-pdf", "create-pdf"],
+	"license": "proprietary",
+	"authors": [
+		{
+			"name": "Amici Infotech",
+			"homepage": "https://amiciinfotech.com"
+		}
+	],
+	"support": {
+		"email": "contact@amiciinfotech.com",
+		"issues": "https://github.com/mufi/craft-super-pdf/issues?state=open",
+		"source": "https://github.com/mufi/craft-super-pdf",
+		"docs": "https://github.com/mufi/craft-super-pdf"
+	},
+	"require": {
+		"craftcms/cms": "^3.0.0",
+		"dompdf/dompdf": "^0.8.3"
+	},
+	"autoload": {
+		"psr-4": {
+			"amici\\SuperPdf\\": "src/"
+		}
+	},
+	"extra": {
+		"handle": "super-pdf",
+		"name": "Super PDF",
+		"developer": "Amici Infotech",
+		"developerUrl": "https://amiciinfotech.com",
+		"documentationUrl": "https://docs.amiciinfotech.com/craft-cms/super-pdf",
+		"changelogUrl": "https://github.com/mufi/craft-super-pdf/master/CHANGELOG.md",
+		"downloadUrl": "https://github.com/mufi/craft-super-pdf/archive/master.zip",
+		"class": "amici\\SuperPdf\\SuperPdf"
+	}
+}
