@@ -29,4 +29,4 @@ Note that some required dependencies may have further dependencies (notably php-
 Visit the [Super PDF page](https://docs.amiciinfotech.com/craft/super-pdf) for all documentation, guides, pricing and developer resources.
 
 ## Support
-Get in touch with us via the [Amici Infotech Support](https://amiciinfotech.com/contact) or by [creating a Github issue](/)
+Get in touch with us via the [Amici Infotech Support](https://amiciinfotech.com/contact) or by [creating a Github issue](/amici-infotech/craft-super-pdf)
