@@ -45,8 +45,8 @@ In the Control Panel, go to Settings → Plugins and click the “Install” but
 You can create PDF from HTML using this code:
 ```bash
 {% set html %}
-	<h1>This is a basic example</h1>
-	<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.</p>
+    <h1>This is a basic example</h1>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.</p>
 {% endset %}
 
 {% set settings = {
@@ -63,8 +63,8 @@ You can create PDF from template using this code:
 } %}
 
 {% set vars = {
-	entry : entry,
-	data : data
+    entry : entry,
+    data : data
 } %}
 
 {{ craft.superpdf.template("template/_pdf_template", settings, vars) }}
