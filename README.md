@@ -35,7 +35,7 @@ cd /path/to/project
 Run this command to load the plugin:
 
 ```bash
-composer require amici-infotech/craft-super-pdf
+composer require amici/craft-super-pdf
 ```
 
 In the Control Panel, go to Settings → Plugins and click the “Install” button for Super PDF.
