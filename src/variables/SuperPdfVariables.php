@@ -21,11 +21,13 @@ class SuperPdfVariables
 
     public function html($html = "", $settings = [])
     {
+        error_reporting(E_ALL ^ E_DEPRECATED);
     	return SuperPdf::$plugin->pdf->html($html, $settings);
     }
 
     public function template($template = "", $settings = [], $vars = [])
     {
+        error_reporting(E_ALL ^ E_DEPRECATED);
         return SuperPdf::$plugin->pdf->template($template, $settings, $vars);
     }
 

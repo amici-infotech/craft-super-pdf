@@ -112,7 +112,9 @@ class Pdf
 				'compress' 	 => $this->settings['compress']
 			);
 
-			$this->dompdf->stream($this->settings['filename'], $options);exit();
+			ob_end_clean();
+			$this->dompdf->stream($this->settings['filename'], $options);
+			exit();
 
 		}
 		catch (Exception $e)
