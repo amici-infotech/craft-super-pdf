@@ -12,7 +12,7 @@ class PdfController extends BaseController
 
 	public function init()
 	{
-
+		parent::init();
 	}
 
 	public function actionIndex($filename = "")
