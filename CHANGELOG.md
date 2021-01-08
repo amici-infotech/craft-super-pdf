@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.4 - 2021-01-08
+- Solved issue where URL pdf type was only working for logged in members.
+
 ## 1.0.3 - 2020-10-28
 - Solved Error where Craft v3.5+ throws an error while generating pdf.
 
