@@ -1,7 +1,7 @@
 {
 	"name": "amici/craft-super-pdf",
 	"description": "Create PDF files from html",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"type": "craft-plugin",
 	"keywords": ["craft", "cms", "craftcms", "craft-plugin","pdf", "amici", "dompdf", "twig-to-pdf", "create-pdf"],
 	"license": "proprietary",
@@ -18,8 +18,8 @@
 		"docs": "https://github.com/mufi/craft-super-pdf"
 	},
 	"require": {
-		"craftcms/cms": "^3.0.0",
-		"dompdf/dompdf": "^0.8.3"
+		"craftcms/cms": "^3.6.0",
+		"dompdf/dompdf": "^1.0.2"
 	},
 	"autoload": {
 		"psr-4": {

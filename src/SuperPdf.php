@@ -22,8 +22,7 @@ class SuperPdf extends Plugin
 	public $hasCpSection 		= false;
 	public $hasCpSettings 		= false;
     public static $pluginHandle = 'super-pdf';
-	public $schemaVersion 		= '1.0.4';
-	public $minVersionRequired 	= '1.0.0';
+	public $schemaVersion 		= '1.0.5';
 
 	public function init()
 	{

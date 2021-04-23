@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.5 - 2021-04-23
+> {warning} Super PDF now requires PHP 7.2.5 or newer.
+> {warning} Super PDF now requires Craft CMS 3.6.0 or newer.
+> {warning} Super PDF now requires Craft Commerce 3.3.0 or newer
+
 ## 1.0.4 - 2021-01-08
 - Solved issue where URL pdf type was only working for logged in members.
 
