@@ -5,6 +5,10 @@ use Craft;
 use yii\base\Event;
 use craft\base\Plugin;
 use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterCacheOptionsEvent;
+use craft\helpers\FileHelper;
+use craft\services\Plugins;
+use craft\utilities\ClearCaches;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 
@@ -14,7 +18,6 @@ use amici\SuperPdf\variables\SuperPdfVariables;
 
 class SuperPdf extends Plugin
 {
-
 	use PluginTrait;
 
 	public static $app;
@@ -22,11 +25,10 @@ class SuperPdf extends Plugin
 	public $hasCpSection 		= false;
 	public $hasCpSettings 		= false;
     public static $pluginHandle = 'super-pdf';
-	public $schemaVersion 		= '1.0.5';
+	public $schemaVersion 		= '1.0.6';
 
 	public function init()
 	{
-
 	    parent::init();
 
 	    self::$plugin = $this;
@@ -35,6 +37,10 @@ class SuperPdf extends Plugin
 	    $this->_registerVariables();
 	    $this->_setPluginComponents();
 
+		Event::on(Plugins::class, Plugins::EVENT_AFTER_LOAD_PLUGINS, function () {
+			// Register cache options
+			$this->_registerCacheOptions();
+        });
 	}
 
 	private function _registerRoutes()
@@ -42,6 +48,21 @@ class SuperPdf extends Plugin
     	Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function (RegisterUrlRulesEvent $event) {
 	        $event->rules['super-pdf/<filename>'] = 'super-pdf/pdf';
 	    });
+	}
+
+	private function _registerCacheOptions()
+    {
+    	// Adds PDF storage path to the list of things the Clear Caches tool can delete
+        Event::on(ClearCaches::class, ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
+            static function (RegisterCacheOptionsEvent $event) {
+                $event->options[] = [
+                    'key' => 'super-pdf-cache',
+                    'label' => Craft::t('super-pdf', 'Super PDF Cache'),
+					'info' => Craft::t('super-pdf', 'Local copies of Super PDF generated PDFs in storage folder. <br> <code>' . self::$plugin->general->getStoragePath() . '</code>'),
+                    'action' => FileHelper::normalizePath(self::$plugin->general->getStoragePath())
+                ];
+            }
+        );
 	}
 
 	private function _registerVariables()

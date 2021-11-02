@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.6 - 2021-11-02
+- Added Option to clear pdf cache in craft cms's clear cache utility.
+
 ## 1.0.5 - 2021-04-23
 > {warning} Super PDF now requires PHP 7.2.5 or newer.
 
