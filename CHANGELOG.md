@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.7 - 2022-03-09
+- Added new setting `streamContext` where user can pass any HTTP Context. For example:
+```
+'streamContext' => [
+    'ssl' => [
+        'allow_self_signed'=> TRUE,
+        'verify_peer' => FALSE,
+        'verify_peer_name' => FALSE,
+    ]
+]
+```
+
 ## 1.0.6 - 2021-11-02
 - Added Option to clear pdf cache in craft cms's clear cache utility.
 

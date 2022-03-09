@@ -45,5 +45,6 @@ class Settings extends Model
     public $copy = false;
     public $add = false;
     public $type = 'render'; // url
+    public $streamContext = [];
 
 }

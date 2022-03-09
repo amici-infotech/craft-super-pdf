@@ -58,6 +58,12 @@ class Pdf
 
 			$this->dompdf = new Dompdf($this->settings);
 			$this->dompdf->setPaper($this->settings['defaultPaperSize'], $this->settings['defaultPaperOrientation']);
+
+			if(! empty($this->settings['streamContext']))
+			{
+				$this->dompdf->setHttpContext(stream_context_create($this->settings['streamContext']));
+			}
+
 			$this->dompdf->loadHtml($this->html);
 			$this->dompdf->render();
 
