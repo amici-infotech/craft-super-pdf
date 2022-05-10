@@ -20,19 +20,19 @@ class SuperPdf extends Plugin
 {
 	use PluginTrait;
 
-	public static $app;
-	public static $plugin;
-	public $hasCpSection 		= false;
-	public $hasCpSettings 		= false;
-    public static $pluginHandle = 'super-pdf';
-	public $schemaVersion 		= '1.0.7';
+	public static Plugin $plugin;
+	public string $schemaVersion = '2.0.0';
+	public string $minVersionRequired = '1.0.0';
+	public bool $hasCpSection 		= false;
+	public bool $hasCpSettings 		= false;
+    public static string $pluginHandle = 'super-pdf';
 
-	public function init()
+	public function init(): void
 	{
 	    parent::init();
 
 	    self::$plugin = $this;
-	    // self::$app = new App();
+
 	    $this->_registerRoutes();
 	    $this->_registerVariables();
 	    $this->_setPluginComponents();
@@ -43,14 +43,14 @@ class SuperPdf extends Plugin
         });
 	}
 
-	private function _registerRoutes()
+	private function _registerRoutes(): void
     {
     	Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function (RegisterUrlRulesEvent $event) {
 	        $event->rules['super-pdf/<filename>'] = 'super-pdf/pdf';
 	    });
 	}
 
-	private function _registerCacheOptions()
+	private function _registerCacheOptions(): void
     {
     	// Adds PDF storage path to the list of things the Clear Caches tool can delete
         Event::on(ClearCaches::class, ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
@@ -65,19 +65,19 @@ class SuperPdf extends Plugin
         );
 	}
 
-	private function _registerVariables()
+	private function _registerVariables(): void
 	{
 	    Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {
 	        $event->sender->set('superpdf', SuperPdfVariables::class);
 	    });
 	}
 
-	protected function createSettingsModel(): Settings
+	protected function createSettingsModel(): ?\craft\base\Model
 	{
 	    return new Settings();
 	}
 
-	protected function afterInstall()
+	protected function afterInstall(): void
 	{
 
 	}
@@ -88,9 +88,9 @@ class SuperPdf extends Plugin
 		return $parent;
 	}*/
 
-	public function beforeUninstall(): bool
+	public function beforeUninstall(): void
 	{
-		return true;
+
 	}
 
 }

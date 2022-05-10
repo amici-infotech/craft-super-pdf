@@ -10,16 +10,16 @@ use amici\SuperPdf\SuperPdf;
 class PdfController extends BaseController
 {
 
-	protected $allowAnonymous = [
+	protected array|bool|int $allowAnonymous = [
         'index' => self::ALLOW_ANONYMOUS_LIVE
     ];
 
-	public function init()
+	public function init(): void
 	{
 		parent::init();
 	}
 
-	public function actionIndex($filename = "")
+	public function actionIndex(?string $filename = "")
 	{
 
 		if($filename == "")

@@ -4,11 +4,12 @@ namespace amici\SuperPdf\libraries;
 use Craft;
 use craft\helpers\FileHelper;
 use amici\SuperPdf\SuperPdf;
+use craft\base\Plugin;
 
 class General
 {
 
-	public $plugin;
+	public Plugin $plugin;
 
 	function __construct()
 	{

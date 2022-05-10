@@ -11,9 +11,7 @@ use amici\SuperPdf\libraries\Pdf;
 trait PluginTrait
 {
 
-    public static $plugin;
-
-    private function _setPluginComponents()
+    private function _setPluginComponents(): void
     {
         $this->setComponents([
             'general' => General::class,
@@ -21,22 +19,22 @@ trait PluginTrait
         ]);
     }
 
-    public static function t($message, array $params = [])
+    public static function t($message, array $params = []): ?string
     {
     	return Craft::t('super-pdf', $message, $params);
     }
 
-    public static function log($message, $type = 'info')
+    public static function log($message, $type = 'info'): void
     {
     	Craft::$type(self::t($message), __METHOD__);
     }
 
-    public static function info($message)
+    public static function info($message): void
     {
     	Craft::info(self::t($message), __METHOD__);
     }
 
-    public static function error($message)
+    public static function error($message): void
     {
     	Craft::error(self::t($message), __METHOD__);
     }
