@@ -21,7 +21,7 @@ class SuperPdf extends Plugin
 	use PluginTrait;
 
 	public static Plugin $plugin;
-	public string $schemaVersion = '2.0.0';
+	public string $schemaVersion = '2.0.1';
 	public string $minVersionRequired = '1.0.0';
 	public bool $hasCpSection 		= false;
 	public bool $hasCpSettings 		= false;
