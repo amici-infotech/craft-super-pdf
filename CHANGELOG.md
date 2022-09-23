@@ -2,7 +2,9 @@
 
 ## 1.0.8 - 2022-09-23
 > {warning} For "url" type, PDF code will return object instead of URL. Code will not break but advisable to use {{ object.getUrl() }} instead {{ object }}.
+
 > {warning} New Settings section added to give user more control over PDF behaviour. Make sure to review and change settings according to your needs.
+
 - Adding Settings to give user more control over the plugin.
 - Introducing filesystems so user can store pdfs outside of storage folder.
 - Depending on the settings, We can now set wether we want to regenerate file on each page load, override it or ignore new file creation.
