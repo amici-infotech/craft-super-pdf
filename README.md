@@ -16,8 +16,8 @@ Creating PDF is easy and fast now with Super PDF. Plug, Twig and play. Super PDF
  * Basic SVG support
 
 ### Requirements
- * PHP version 7.1 or higher
- * Craft CMS 3.0 or higher
+ * PHP version 7.2.5 or higher
+ * Craft CMS 3.6.0 or higher
  * DOM extension
  * MBString extension
  * php-font-lib
@@ -69,8 +69,44 @@ You can create PDF from template using this code:
 
 {{ craft.superpdf.template("template/_pdf_template", settings, vars) }}
 ```
+
+You can also create PDF and instead of preview it, show a URL to visit / download:
+```bash
+{% set settings = {
+    filename: "My_PDF",
+    type: 'object',
+} %}
+
+{% set vars = {
+    entry : entry,
+    data : data
+} %}
+
+{% set object = craft.superpdf.template("template/_pdf_template", settings, vars) %}
+
+// Default echo object will return URL
+{{ object }}
+
+{{ object.url }}
+{{ object.getUrl() }}
+
+{{ object.path }}
+{{ object.getPath() }}
+
+{{ object.filename }}
+{{ object.getFilename() }}
+
+{{ object.kind }}
+{{ object.size }}
+{{ object.dateModified|date("m/d/Y H:i:s") }}
+
+// Returns craft assets element. Only if PDF is stored in craft assets volumes instead of storage folder.
+{{ object.asset }}
+{{ object.getAsset() }}
+```
+
 ### Documentation
-Visit the [Super PDF page](https://docs.amiciinfotech.com/craft/super-pdf) for all documentation, guides, pricing and developer resources.
+Visit the [Super PDF page](https://docs.amiciinfotech.com/craft-cms/super-pdf) for all documentation, guides, pricing and developer resources.
 
 ### Support
 Get in touch with us via the [Amici Infotech Support](https://amiciinfotech.com/contact) or by [creating a Github issue](https://github.com/amici-infotech/craft-super-pdf/issues)

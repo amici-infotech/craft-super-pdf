@@ -7,12 +7,14 @@ use craft\base\Plugin;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
 use craft\services\Plugins;
 use craft\utilities\ClearCaches;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 
 use amici\SuperPdf\base\PluginTrait;
+use amici\SuperPdf\services\App;
 use amici\SuperPdf\models\Settings;
 use amici\SuperPdf\variables\SuperPdfVariables;
 
@@ -23,19 +25,22 @@ class SuperPdf extends Plugin
 	public static $app;
 	public static $plugin;
 	public $hasCpSection 		= false;
-	public $hasCpSettings 		= false;
+	public $hasCpSettings 		= true;
     public static $pluginHandle = 'super-pdf';
-	public $schemaVersion 		= '1.0.7';
+	public $schemaVersion 		= '1.0.8';
 
 	public function init()
 	{
 	    parent::init();
 
 	    self::$plugin = $this;
-	    // self::$app = new App();
-	    $this->_registerRoutes();
+	    self::$app = new App();
+        $this->_registerCpRoutes();
+	    $this->_registerWebRoutes();
 	    $this->_registerVariables();
 	    $this->_setPluginComponents();
+
+        $this->hasCpSection = $this->getSettings()->hasCpSection;
 
 		Event::on(Plugins::class, Plugins::EVENT_AFTER_LOAD_PLUGINS, function () {
 			// Register cache options
@@ -43,12 +48,22 @@ class SuperPdf extends Plugin
         });
 	}
 
-	private function _registerRoutes()
+	private function _registerWebRoutes()
     {
     	Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function (RegisterUrlRulesEvent $event) {
 	        $event->rules['super-pdf/<filename>'] = 'super-pdf/pdf';
 	    });
 	}
+
+    private function _registerCpRoutes(): void
+    {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+            $event->rules = array_merge($event->rules, [
+                'super-pdf'          => 'super-pdf/settings/general',
+                'super-pdf/settings' => 'super-pdf/settings/general',
+            ]);
+        });
+    }
 
 	private function _registerCacheOptions()
     {
@@ -77,10 +92,37 @@ class SuperPdf extends Plugin
 	    return new Settings();
 	}
 
+    public function getCpNavItem(): ?array
+    {
+
+        $parent = parent::getCpNavItem();
+        $parent['label'] = $this->getSettings()->pluginName;
+        $parent['url'] = 'super-pdf';
+
+        if($parent['label'] == "")
+        {
+            $parent['label'] = "Super PDF";
+        }
+
+        return $parent;
+
+    }
+
+    protected function cpNavIconPath(): ?string
+    {
+        $path = $this->getBasePath() . DIRECTORY_SEPARATOR . 'icon-mask.svg';
+        return is_file($path) ? $path : null;
+    }
+
 	protected function afterInstall()
 	{
 
 	}
+
+    public function getSettingsResponse()
+    {
+        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('super-pdf/settings'));
+    }
 
 	/*public function getCpNavItem()
 	{

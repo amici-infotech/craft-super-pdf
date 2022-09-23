@@ -21,25 +21,7 @@ class PdfController extends BaseController
 
 	public function actionIndex($filename = "")
 	{
-
-		if($filename == "")
-		{
-			$error = SuperPdf::t("Filename field cannot be empty");
-			SuperPdf::error($error);
-			throw new Exception($error);
-		}
-
-		$path = SuperPdf::$plugin->general->getStoragePath() . '/' . $filename;
-		if(! file_exists($path))
-		{
-			$error = SuperPdf::t("PDF File does not exists.");
-			SuperPdf::error($error);
-			throw new Exception($error);
-		}
-
-		$response = Craft::$app->getResponse();
-		return $response->sendFile($path, null, ['inline' => true]);
-
+		return SuperPdf::$plugin->pdf->renderFileFromStorage($filename);
 	}
 
 }
