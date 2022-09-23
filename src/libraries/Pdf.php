@@ -80,11 +80,12 @@ class Pdf
 					return $this->asset;
 				}
 
-				if($this->settings['volume'] == "storage") {
+				// Code works but not need to
+				/*if($this->settings['volume'] == "storage") {
 					return $this->renderFileFromStorage($this->settings['filename'] . '.pdf');
 				}
 
-				return $this->renderFileFromAssetsElement();
+				return $this->renderFileFromAssetsElement();*/
 			}
 
 			$this->dompdf = new Dompdf($this->settings);
@@ -230,7 +231,7 @@ class Pdf
 				$filename = Assets::prepareAssetName($filename);
 				$assetsService->replaceAssetFile($asset, $this->path, $filename);
 
-				return $this->createAssetObject();
+				return $this->createAssetObject($asset);
 			}
 			else
 			{

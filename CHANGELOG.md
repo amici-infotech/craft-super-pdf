@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.8.1 - 2022-09-23
+- Solved a bug where override option with Assets volume location was taking up file from storage folder.
+
 ## 1.0.8 - 2022-09-23
 > {warning} For "url" type, PDF code will return object instead of URL. Code will not break but advisable to use {{ object.getUrl() }} instead {{ object }}.
 
