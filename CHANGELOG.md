@@ -12,20 +12,21 @@
 - Object can be use with variables or methods to get the URL or other meta data from the file. For example:
 ```
 {% set object = craft.superpdf.template("pdf-template", settings, vars) %}
+<!-- File URL -->
+{{ object }}
 {{ object.url }}
 {{ object.getUrl() }}
-
+<!-- File PATH -->
 {{ object.path }}
 {{ object.getPath() }}
-
+<!-- Filename -->
 {{ object.filename }}
 {{ object.getFilename() }}
-
+<!-- Meta data -->
 {{ object.kind }}
 {{ object.size }}
 {{ object.dateModified|date("m/d/Y H:i:s") }}
-
-// Returns craft assets element. Only if PDF is stored in craft assets volumes instead of storage folder.
+<!-- Returns craft assets element. Only if PDF is stored in craft assets volumes instead of storage folder. -->
 {{ object.asset }}
 {{ object.getAsset() }}
 ```
