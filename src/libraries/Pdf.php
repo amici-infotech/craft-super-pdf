@@ -385,8 +385,7 @@ class Pdf
 		]);
 
 		if (! $this->folder) {
-		    $folderId = $assetsService->ensureFolderByFullPathAndVolume($this->settings['folder'], $volume)->id;
-			$this->folder = $assetsService->findFolder(['id' => $folderId]);
+		    $this->folder = $assetsService->ensureFolderByFullPathAndVolume($this->settings['folder'], $volume);
 		}
 
 		return $this->folder;

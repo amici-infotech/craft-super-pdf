@@ -1,10 +1,39 @@
 # Changelog
 
 ## 2.0.2 - 2022-09-30
-- {warning} Super PDF now requires DomPdf v2.0.0 or newer.
+
+> {warning} For "url" type, PDF code will return object instead of URL. Code will not break but advisable to use {{ object.getUrl() }} instead {{ object }}.
+
+> {warning} New Settings section added to give user more control over PDF behaviour. Make sure to review and change settings according to your needs.
+
+- Adding Settings to give user more control over the plugin.
+- Introducing filesystems so user can store pdfs outside of storage folder.
+- Depending on the settings, We can now set wether we want to regenerate file on each page load, override it or ignore new file creation.
+- Type "url" is deprecated. Use "object" instead.
+- Object can be use with variables or methods to get the URL or other meta data from the file. For example:
+```
+{% set object = craft.superpdf.template("pdf-template", settings, vars) %}
+<!-- File URL -->
+{{ object }}
+{{ object.url }}
+{{ object.getUrl() }}
+<!-- File PATH -->
+{{ object.path }}
+{{ object.getPath() }}
+<!-- Filename -->
+{{ object.filename }}
+{{ object.getFilename() }}
+<!-- Meta data -->
+{{ object.kind }}
+{{ object.size }}
+{{ object.dateModified|date("m/d/Y H:i:s") }}
+<!-- Returns craft assets element. Only if PDF is stored in craft assets volumes instead of storage folder. -->
+{{ object.asset }}
+{{ object.getAsset() }}
+```
 
 ## 2.0.1 - 2022-08-03
-- {warning} Super PDF now requires DomPdf v2.0.0 or newer.
+> {warning} Super PDF now requires DomPdf v2.0.0 or newer.
 
 ## 2.0.0 - 2022-05-10
 - Upgraded to support craft cms 4.
