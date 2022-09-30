@@ -3,13 +3,14 @@ namespace amici\SuperPdf\libraries;
 
 use Craft;
 use craft\helpers\FileHelper;
+use craft\elements\Asset;
+
 use amici\SuperPdf\SuperPdf;
-use craft\base\Plugin;
 
 class General
 {
 
-	public Plugin $plugin;
+	public $plugin;
 
 	function __construct()
 	{
@@ -44,4 +45,23 @@ class General
 
 	}
 
+	public function getSourceOptions(): array
+	{
+	    $sourceOptions = [];
+	    $sourceOptions[] = [
+            'label' => "Craft Storage (Default)",
+            'value' => "storage",
+        ];
+
+	    foreach (Asset::sources('settings') as $key => $volume) {
+	        if (!isset($volume['heading'])) {
+	        	$sourceOptions[] = [
+	                'label' => $volume['label'],
+	                'value' => $volume['data']['volume-handle'],
+	            ];
+	        }
+	    }
+
+	    return $sourceOptions;
+	}
 }

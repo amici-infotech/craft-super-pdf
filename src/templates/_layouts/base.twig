@@ -1,0 +1,57 @@
+{% extends "_layouts/cp" %}
+{% if meta.title is defined %}
+	{% set title  = meta.title|t('super-pdf') %}
+{% endif %}
+{% set bodyClass = craft.app.request.getSegments()|slice(0, 3)|join(' ') %}
+
+{% set btnLabel = btnLabel ?? 'Save' %}
+{% block actionButton %}
+	{% if meta.type is defined and meta.type == "form" %}
+	<div class="buttons">
+        {% block extraButtons %}{% endblock %}
+	    <input class="btn submit" type="submit" value="{{ btnLabel|t('super-pdf') }}">
+	</div>
+	{% endif %}
+{% endblock %}
+
+{% set sidebar %}
+    {% if navigation|default([])|length %}
+	<nav>
+	    <ul>
+            {% for item in navigation %}
+                {% if item.heading is defined and item.heading is not empty %}
+                    <li class="heading"><span>{{ item.heading }}</span></li>
+                {% else %}
+                    <li>
+                        <a href="{{ url(item.url) }}"
+                           {% if meta.selectedNav == item.selected %}class="sel"{% endif %}>
+                            {{ item.label }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+	    </ul>
+	</nav>
+    {% endif %}
+{% endset %}
+
+{% block tabs %}
+    {% if tabs|default([])|length %}
+    <nav id="tabs">
+        <ul>
+            {% for item in tabs %}
+                {% if item.heading is defined and item.heading is not empty %}
+                    <li class="heading"><span>{{ item.heading }}</span></li>
+                {% else %}
+                    <li>
+                        <a href="{{ url(item.url) }}"
+                           {% if settings.selectedTab == item.selected %}class="sel"{% endif %}>
+                            {{ item.label }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+{% endblock %}

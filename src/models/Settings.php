@@ -9,12 +9,12 @@ class Settings extends Model
 
     public bool $forceDownload = false;
     public bool $compress = true;
-    public ?string $rootDir;
-    public ?string $tempDir;
-    public ?string $fontDir;
-    public ?string $fontCache;
-    public ?string $chroot;
-    public ?string $logOutputFile;
+    public $rootDir;
+    public $tempDir;
+    public $fontDir;
+    public $fontCache;
+    public $chroot;
+    public $logOutputFile;
     public ?string $defaultMediaType = "screen";
     public ?string $defaultPaperSize = "A4";
     public ?string $defaultPaperOrientation = "portrait";
@@ -46,5 +46,50 @@ class Settings extends Model
     public bool $add = false;
     public ?string $type = 'render'; // url
     public ?array $streamContext = [];
+
+    // General Settings
+    public $pluginName = "Super PDF";
+    public $hasCpSection = false;
+    public $volume = "storage";
+    public $folder = "";
+    public $resaveBehaviour = "duplicate";
+
+    public function getSettingsNavItems(): array
+    {
+        $ret = [];
+        if(Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            $ret +=  [
+                'local' => [
+                    'label'     => Craft::t('super-pdf', 'General Settings'),
+                    'url'       => 'super-pdf',
+                    'action'    => 'super-pdf/settings/save-general-settings',
+                    'redirect'  => 'super-pdf/settings',
+                    'selected'  => 'local',
+                    'template'  => 'super-pdf/_templates/general'
+                ]
+            ];
+        }
+
+        /*$ret +=  [
+            'truncate' => [
+                'label'     => Craft::t('super-pdf', 'Truncate'),
+                'url'       => 'super-pdf/truncate',
+                'action'    => 'super-pdf/settings/truncate-queue',
+                'redirect'  => 'super-pdf/truncate',
+                'selected'  => 'truncate',
+                'template'  => 'super-pdf/_templates/truncate'
+            ],
+        ];*/
+
+        return $ret;
+
+    }
+
+    public function rules(): array
+    {
+        return [
+            [['pluginName', 'volume', 'resaveBehaviour'], 'required'],
+        ];
+    }
 
 }

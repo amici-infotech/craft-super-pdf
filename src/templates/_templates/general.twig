@@ -1,0 +1,104 @@
+{% extends 'super-pdf/_layouts/base' %}
+{% set selectedSubnavItem = 'settings' %}
+{% set title  = navigation[meta.selectedNav].label %}
+{% import 'super-pdf/_macros' as macros %}
+{% set fullPageForm = true %}
+
+{% macro errorList(errors) %}
+    {% if errors %}
+        <ul class="errors">
+            {% for categorizedErrors in errors %}
+                {% for error in categorizedErrors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}
+{% from _self import errorList %}
+
+{% import "_includes/forms" as forms %}
+{% block content %}
+	<div id="settings-cp">
+		{% if errors is defined and errors|length %}
+		    <div class="pane">
+		        <h3>{{ "Something went wrong!"|t('super-pdf') }}</h3>
+		        {{ errorList(errors) }}
+		    </div>
+		    <br>
+		{% endif %}
+
+	    {{ csrfInput() }}
+	    <input type="hidden" name="action" value="{{ meta.action }}">
+	    {{ redirectInput(meta.redirect) }}
+
+		{% namespace 'settings' %}
+			{{ forms.textField({
+			    first: true,
+			    label: "Plugin Name",
+			    name: 'pluginName',
+			    value: settings.pluginName,
+			    required: true,
+			    errors: (settings is defined ? settings.getErrors('pluginName') : null),
+			    warning: macros.configWarning('pluginName', 'super-pdf'),
+			}) }}
+
+			{{ forms.lightswitchField({
+			    label: 'Enable CP Section' | t('super-pdf'),
+			    instructions: 'Whether to enable Super PDF in the main sidebar navigation.' | t('super-pdf'),
+			    id: 'hasCpSection',
+			    name: 'hasCpSection',
+			    on: settings.hasCpSection,
+			    errors: (settings is defined ? settings.getErrors('hasCpSection') : null),
+			    warning: macros.configWarning('hasCpSection', 'super-pdf'),
+			}) }}
+
+            <hr>
+
+            {{ forms.selectField({
+                label: "Default PDF Storage Volume"|t('super-pdf'),
+                instructions: 'Default Folder where PDF files will store.'|t('super-pdf'),
+                id: 'volume',
+                name: 'volume',
+                options: meta.sources,
+                value: settings.volume,
+                required: true,
+                errors: (settings is defined ? settings.getErrors('volume') : null),
+                warning: macros.configWarning('volume', 'super-pdf'),
+            }) }}
+
+            {{ forms.textField({
+                first: true,
+                label: "Sub Folder",
+                name: 'folder',
+                value: settings.folder,
+                required: false,
+                errors: (settings is defined ? settings.getErrors('folder') : null),
+                warning: macros.configWarning('folder', 'super-pdf'),
+            }) }}
+
+            {{ forms.selectField({
+                label: "Reset Behaviour"|t('super-pdf'),
+                instructions: 'Default behaviour when file with the same name already exists.'|t('super-pdf'),
+                id: 'resaveBehaviour',
+                name: 'resaveBehaviour',
+                options: [{
+                    'label': 'Duplicate',
+                    'value': 'duplicate'
+                }, {
+                    'label': 'Override',
+                    'value': 'override'
+                }, {
+                    'label': 'Ignore',
+                    'value': 'ignore'
+                }],
+                value: settings.resaveBehaviour,
+                required: true,
+                errors: (settings is defined ? settings.getErrors('resaveBehaviour') : null),
+                warning: macros.configWarning('resaveBehaviour', 'super-pdf'),
+            }) }}
+		{% endnamespace %}
+
+		<button class="btn submit" type="submit">{{ 'Save'|t('super-pdf') }}</button>
+    </div>
+{% endblock %}

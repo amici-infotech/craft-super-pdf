@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2 - 2022-09-30
+- {warning} Super PDF now requires DomPdf v2.0.0 or newer.
+
 ## 2.0.1 - 2022-08-03
 - {warning} Super PDF now requires DomPdf v2.0.0 or newer.
 
