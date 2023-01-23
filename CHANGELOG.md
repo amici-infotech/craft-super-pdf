@@ -2,7 +2,7 @@
 
 ## 1.0.8.2 - 2023-01-23
 - Deprecated `streamContext` variable.
-- Introducing new `httpContext` variable that accepts and set that array as [DomPdf httpContext](https://github.com/dompdf/dompdf/pull/2807). In most cases, it will be just to replace variable from `streamContext` to `httpContext` in config file.
+- Introducing new `httpContext` variable that accepts and set that array as [DomPdf httpContext](https://github.com/dompdf/dompdf/pull/2807). In most cases, it will be just to replace variable from `streamContext` to `httpContext` in config/super-pdf.php file.
 
 ## 1.0.8.1 - 2022-09-23
 - Solved a bug where override option with Assets volume location was taking up file from storage folder.
