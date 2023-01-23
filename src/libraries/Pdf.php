@@ -91,9 +91,14 @@ class Pdf
 			$this->dompdf = new Dompdf($this->settings);
 			$this->dompdf->setPaper($this->settings['defaultPaperSize'], $this->settings['defaultPaperOrientation']);
 
-			if(! empty($this->settings->streamContext))
+			if(! empty($this->settings['httpContext']))
 			{
-				$this->dompdf->setHttpContext(stream_context_create($this->settings->streamContext));
+				$this->dompdf->setHttpContext($this->settings['httpContext']);
+			}
+			elseif(! empty($this->settings['streamContext']))
+			{
+				Craft::$app->getDeprecator()->log('streamContext', "PDF Settings `streamContext` is deprecated. Use `httpContext` instead.");
+				$this->dompdf->setHttpContext(stream_context_create($this->settings['streamContext']));
 			}
 
 			$this->dompdf->loadHtml($this->html);
@@ -102,12 +107,12 @@ class Pdf
 			if($this->settings['encrypt'])
 			{
 				$allow = [];
-				if($this->settings->print) 		$allow[] = 'print';
-				if($this->settings->modify) 	$allow[] = 'modify';
-				if($this->settings->copy) 		$allow[] = 'copy';
-				if($this->settings->add) 		$allow[] = 'add';
+				if($this->settings['print'])  $allow[] = 'print';
+				if($this->settings['modify']) $allow[] = 'modify';
+				if($this->settings['copy'])   $allow[] = 'copy';
+				if($this->settings['add']) 	  $allow[] = 'add';
 
-				$this->dompdf->getCanvas()->get_cpdf()->setEncryption($this->settings->password, $this->settings->adminPassword, $allow);
+				$this->dompdf->getCanvas()->get_cpdf()->setEncryption($this->settings['password'], $this->settings['adminPassword'], $allow);
 			}
 
 			if($this->settings['type'] == 'url')

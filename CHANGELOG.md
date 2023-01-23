@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.2.1 - 2023-01-23
+- Deprecated `streamContext` variable.
+- Introducing new `httpContext` variable that accepts and set that array as [DomPdf httpContext](https://github.com/dompdf/dompdf/pull/2807). In most cases, it will be just to replace variable from `streamContext` to `httpContext` in config/super-pdf.php file.
+
 ## 2.0.2 - 2022-09-30
 
 > {warning} For "url" type, PDF code will return object instead of URL. Code will not break but advisable to use {{ object.getUrl() }} instead {{ object }}.
