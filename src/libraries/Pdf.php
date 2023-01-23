@@ -91,10 +91,16 @@ class Pdf
 			$this->dompdf = new Dompdf($this->settings);
 			$this->dompdf->setPaper($this->settings['defaultPaperSize'], $this->settings['defaultPaperOrientation']);
 
-			if(! empty($this->settings['streamContext']))
+			if(! empty($this->settings['httpContext']))
 			{
+				$this->dompdf->setHttpContext($this->settings['httpContext']);
+			}
+			elseif(! empty($this->settings['streamContext']))
+			{
+				Craft::$app->getDeprecator()->log('streamContext', "PDF Settings `streamContext` is deprecated. Use `httpContext` instead.");
 				$this->dompdf->setHttpContext(stream_context_create($this->settings['streamContext']));
 			}
+
 
 			$this->dompdf->loadHtml($this->html);
 			$this->dompdf->render();

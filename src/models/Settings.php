@@ -46,6 +46,7 @@ class Settings extends Model
     public $add = false;
     public $type = 'render'; // url
     public $streamContext = [];
+    public $httpContext = [];
 
     // General Settings
     public $pluginName = "Super PDF";
