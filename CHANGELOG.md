@@ -3,6 +3,7 @@
 ## 2.0.2.1 - 2023-01-23
 - Deprecated `streamContext` variable.
 - Introducing new `httpContext` variable that accepts and set that array as [DomPdf httpContext](https://github.com/dompdf/dompdf/pull/2807). In most cases, it will be just to replace variable from `streamContext` to `httpContext` in config/super-pdf.php file.
+- Solved a bug where all this variables `streamContext`, `encrypt`, `print`, `modify`, `copy`, `add`, `password`, `adminPassword` were using object pointer instead of array and due to that none of it was working. [#12](https://github.com/amici-infotech/craft-super-pdf/issues/12)
 
 ## 2.0.2 - 2022-09-30
 
