@@ -29,7 +29,7 @@ class PdfController extends BaseController
 			throw new Exception($error);
 		}
 
-		$path = SuperPdf::$plugin->general->getStoragePath() . '/' . $filename;
+		$path = SuperPdf::$plugin->pdf->getStoragePath() . '/' . $filename;
 		if(! file_exists($path))
 		{
 			$error = SuperPdf::t("PDF File does not exists.");

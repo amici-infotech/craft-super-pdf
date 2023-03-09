@@ -74,8 +74,8 @@ class SuperPdf extends Plugin
                 $event->options[] = [
                     'key' => 'super-pdf-cache',
                     'label' => Craft::t('super-pdf', 'Super PDF Cache'),
-					'info' => Craft::t('super-pdf', 'Local copies of Super PDF generated PDFs in storage folder. <br> <code>' . self::$plugin->general->getStoragePath() . '</code>'),
-                    'action' => FileHelper::normalizePath(self::$plugin->general->getStoragePath())
+					'info' => Craft::t('super-pdf', 'Local copies of Super PDF generated PDFs in storage folder. <br> <code>' . self::$plugin->pdf->getStoragePath() . '</code>'),
+                    'action' => FileHelper::normalizePath(self::$plugin->pdf->getStoragePath())
                 ];
             }
         );
