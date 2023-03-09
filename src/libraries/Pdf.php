@@ -348,10 +348,20 @@ class Pdf
 		return null;
 	}
 
-	private function getStoragePath()
+	public function getStoragePath()
 	{
 		$path = SuperPdf::$plugin->general->getStoragePath();
-		return rtrim($path, '/') . ($this->settings['folder'] != '' ? '/' . $this->settings['folder'] : '');
+		$path = rtrim($path, '/');
+
+		if($this->settings['folder'] == '') {
+			return $path;
+		}
+
+		$path = $path . '/' . $this->settings['folder'];
+		$path = FileHelper::normalizePath($path);
+		FileHelper::createDirectory($path);
+
+		return rtrim($path, '/');
 	}
 
 	private function getFolder()

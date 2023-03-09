@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.8.3 - 2023-03-09
+- Fix the issue where clear cache was clearing main folder instead of sub folder.
+- Fix the issue where Preview file was creating main folder path instead of sub folder path. that was throwing file not found error.
+
 ## 1.0.8.2 - 2023-01-23
 - Deprecated `streamContext` variable.
 - Introducing new `httpContext` variable that accepts and set that array as [DomPdf httpContext](https://github.com/dompdf/dompdf/pull/2807). In most cases, it will be just to replace variable from `streamContext` to `httpContext` in config/super-pdf.php file.
