@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2.3 - 2023-03-24
+- Solved a bug where yii2 head, body and footer comments were added in PDF HTML #11
+
 ## 2.0.2.2 - 2023-03-09
 - Fix the issue where clear cache was clearing main folder instead of sub folder.
 - Fix the issue where Preview file was creating main folder path instead of sub folder path. that was throwing file not found error.
