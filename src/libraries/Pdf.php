@@ -61,7 +61,7 @@ class Pdf
 			$this->settings['resaveBehaviour'] != 'ignore' ||
 			! in_array($this->settings['type'], ['url', 'object'])
 		) {
-			$this->html = Craft::$app->getView()->renderTemplate($template, $vars);
+			$this->html = Craft::$app->getView()->renderPageTemplate($template, $vars);
 		}
 
 		return $this->_generate();
