@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2.4 - 2023-05-17
+- Solved a bug where looping data to create multiple pdf creates only 1 pdf due to variable not reseting. #17
+
 ## 2.0.2.3 - 2023-03-24
 - Solved a bug where yii2 head, body and footer comments were added in PDF HTML #11
 
