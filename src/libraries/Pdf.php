@@ -34,6 +34,8 @@ class Pdf
 
 	public function html($html = "", $settings = [])
 	{
+		$this->asset = null;
+        $this->dompdf = null;
 
 		foreach ($settings as $key => $value)
 		{
@@ -49,6 +51,9 @@ class Pdf
 
 	public function template($template = "", $settings = [], $vars = [])
 	{
+		$this->asset = null;
+	    $this->dompdf = null;
+
 		foreach ($settings as $key => $value)
 		{
 			$this->settings[$key] = $value;
