@@ -21,7 +21,7 @@ class Pdf
 
 	public $html = "";
 	public $settings = [];
-	public $dompdf;
+	public Dompdf|null $dompdf;
 	public $devMode;
 	public $folder;
 	public $path;
