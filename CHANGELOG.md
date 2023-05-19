@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2.5 - 2023-05-19
+- Solved a bug where strict syntax of PHP classes want allowing to set $dompdf as null. #17
+
 ## 2.0.2.4 - 2023-05-17
 - Solved a bug where looping data to create multiple pdf creates only 1 pdf due to variable not reseting. #17
 
