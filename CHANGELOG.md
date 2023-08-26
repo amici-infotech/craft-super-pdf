@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.8.7 - 2023-08-26
+- Removed attribute (also known as annotations) syntax form Pdf.php for $domPdf variable as it doesnt support < PHP 8.
+
 ## 1.0.8.6 - 2023-05-19
 - Solved a bug where strict syntax of PHP classes want allowing to set $dompdf as null. #17
 
