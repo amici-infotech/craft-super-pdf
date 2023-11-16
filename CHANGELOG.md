@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.2 - 2023-11-16
+## 1.1.0 - 2023-11-16
 - Upgraded to use DomPdf v2.x.
 
 #### DomPdf 2.0.x highlights
