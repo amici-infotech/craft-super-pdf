@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2 - 2023-11-16
+- Upgraded to use DomPdf v2.x.
+- Require > PHP 7.1 or greater
+- Require > html5-php v2.0.0 or greater
+- Require > php-font-lib v0.5.4 or greater
+- Require > php-svg-lib v0.3.3 or greater
+
+> {warning} After upgrade we request user to QA all PDFs to make sure its working.
+
 ## 1.0.8.7 - 2023-08-26
 - Removed attribute (also known as annotations) syntax form Pdf.php for $domPdf variable as it doesnt support < PHP 8.
 
