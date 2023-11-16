@@ -2,10 +2,21 @@
 
 ## 1.0.2 - 2023-11-16
 - Upgraded to use DomPdf v2.x.
-- Require > PHP 7.1 or greater
-- Require > html5-php v2.0.0 or greater
-- Require > php-font-lib v0.5.4 or greater
-- Require > php-svg-lib v0.3.3 or greater
+
+#### DomPdf 2.0.x highlights
+- Modifies callback and page_script/page_text handling
+- Switches the HTML5 parser to Masterminds/HTML5
+- Improves CSS property parsing and representation
+- Switches installed fonts and font metrics cache file format to JSON
+
+#### DomPdf 2.0.x Requirements
+- PHP 7.1 or greater
+- html5-php v2.0.0 or greater
+- php-font-lib v0.5.4 or greater
+- php-svg-lib v0.3.3 or greater
+
+Additionally, the following are recommended for optimal use:
+- GD (for image processing)
 
 > {warning} After upgrade we request user to QA all PDFs to make sure its working.
 
