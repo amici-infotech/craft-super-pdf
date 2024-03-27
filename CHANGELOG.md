@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.2.5 - 2024-03-27
+## 5.0.0 - 2024-03-27
 - Upgraded plugin to support Craft 5.
 
 ## 2.0.2.5 - 2023-05-19
