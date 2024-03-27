@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2.5 - 2024-03-27
+- Upgraded plugin to support Craft 5.
+
 ## 2.0.2.5 - 2023-05-19
 - Solved a bug where strict syntax of PHP classes want allowing to set $dompdf as null. #17
 

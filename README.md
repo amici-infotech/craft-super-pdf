@@ -1,4 +1,4 @@
-# Super PDF Plugin for Craft CMS 4
+# Super PDF Plugin for Craft CMS 4 / 5
 
 Creating PDF is easy and fast now with Super PDF. Plug, Twig and play. Super PDF is backed with DomPDF library and gives you full power to covert your twig templates into PDF. You can pass external CSS and HTML 4.0 attributes working with it. All the functionality DomPDF gives can be accessible easily in Super PDF.
 
@@ -16,7 +16,7 @@ Creating PDF is easy and fast now with Super PDF. Plug, Twig and play. Super PDF
  * Basic SVG support
 
 ### Requirements
- * PHP version 8.0.0 or higher
+ * PHP version 8.1 or higher
  * Craft CMS 4.0 or higher
  * DOM extension
  * MBString extension
