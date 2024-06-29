@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2.6 - 2024-06-29
+- Added a feature where pdf can have page counter and total variables to show a page counter in pdf file.
+
 ## 2.0.2.5 - 2023-05-19
 - Solved a bug where strict syntax of PHP classes want allowing to set $dompdf as null. #17
 
