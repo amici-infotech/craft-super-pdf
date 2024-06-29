@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1 - 2024-06-29
+- Added a feature where pdf can have page counter and total variables to show a page counter in pdf file.
+
 ## 1.1.0 - 2023-11-16
 - Upgraded to use DomPdf v2.x.
 
