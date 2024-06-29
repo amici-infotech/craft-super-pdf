@@ -109,15 +109,13 @@ class Pdf
 			$this->dompdf->loadHtml($this->html);
 			$this->dompdf->render();
 
+			if(strpos($this->html, "SUPER_PDF_TOTAL_PAGES") !== false) {
+				$this->injectPageCount();
+			}
+
 			if($this->settings['encrypt'])
 			{
-				$allow = [];
-				if($this->settings['print'])  $allow[] = 'print';
-				if($this->settings['modify']) $allow[] = 'modify';
-				if($this->settings['copy'])   $allow[] = 'copy';
-				if($this->settings['add']) 	  $allow[] = 'add';
-
-				$this->dompdf->getCanvas()->get_cpdf()->setEncryption($this->settings['password'], $this->settings['adminPassword'], $allow);
+				$this->injectEncryption();
 			}
 
 			if($this->settings['type'] == 'url')
@@ -147,6 +145,29 @@ class Pdf
 			}
 		}
 
+	}
+
+	public function injectPageCount(): void
+	{
+		$canvas = $this->dompdf->getCanvas();
+		$pdf = $canvas->get_cpdf();
+
+		foreach ($pdf->objects as &$o) {
+			if ($o['t'] === 'contents') {
+				$o['c'] = str_replace('SUPER_PDF_TOTAL_PAGES', $canvas->get_page_count(), $o['c']);
+			}
+		}
+	}
+
+	public function injectEncryption(): void
+	{
+		$allow = [];
+		if($this->settings['print'])  $allow[] = 'print';
+		if($this->settings['modify']) $allow[] = 'modify';
+		if($this->settings['copy'])   $allow[] = 'copy';
+		if($this->settings['add']) 	  $allow[] = 'add';
+
+		$this->dompdf->getCanvas()->get_cpdf()->setEncryption($this->settings['password'], $this->settings['adminPassword'], $allow);
 	}
 
 	public function renderFileFromStorage($filename = "")

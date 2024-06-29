@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.0.1 - 2024-06-29
+- Added a feature where pdf can have page counter and total variables to show a page counter in pdf file.
+
 ## 5.0.0 - 2024-03-27
 - Upgraded plugin to support Craft 5.
 
