@@ -24,7 +24,7 @@ class SuperPdf extends Plugin
 
 	public static $app;
 	public static Plugin $plugin;
-	public string $schemaVersion = '5.0.0';
+	public string $schemaVersion = '5.0.1';
 	// public string $minVersionRequired = '1.0.0';
 	public bool $hasCpSection 		= false;
 	public bool $hasCpSettings 		= true;
