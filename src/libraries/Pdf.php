@@ -45,6 +45,10 @@ class Pdf
 		$this->fetchFile();
 
 		$this->html = $html;
+
+		// Replace long placeholder with short one before rendering
+		$this->html = str_replace('SUPER_PDF_TOTAL_PAGES', '{TP}', $this->html);
+
 		return $this->_generate();
 
 	}
@@ -67,6 +71,9 @@ class Pdf
 			! in_array($this->settings['type'], ['url', 'object'])
 		) {
 			$this->html = Craft::$app->getView()->renderPageTemplate($template, $vars);
+
+			// Replace long placeholder with short one before rendering
+			$this->html = str_replace('SUPER_PDF_TOTAL_PAGES', '{TP}', $this->html);
 		}
 
 		return $this->_generate();
@@ -110,7 +117,7 @@ class Pdf
 			$this->dompdf->loadHtml($this->html);
 			$this->dompdf->render();
 
-			if(strpos($this->html, "SUPER_PDF_TOTAL_PAGES") !== false) {
+			if(strpos($this->html, "{TP}") !== false) {
 				$this->injectPageCount();
 			}
 
@@ -153,9 +160,14 @@ class Pdf
 		$canvas = $this->dompdf->getCanvas();
 		$pdf = $canvas->get_cpdf();
 
+		$totalPages = $canvas->get_page_count();
+
+		// Pad to 3 digits for consistent width
+		$paddedTotal = str_pad($totalPages, 3, ' ', STR_PAD_LEFT);
+
 		foreach ($pdf->objects as &$o) {
 			if ($o['t'] === 'contents') {
-				$o['c'] = str_replace('SUPER_PDF_TOTAL_PAGES', $canvas->get_page_count(), $o['c']);
+				$o['c'] = str_replace('{TP}', $paddedTotal, $o['c']);
 			}
 		}
 	}
