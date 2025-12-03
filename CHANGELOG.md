@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2.7 - 2025-10-03
+- Fixed an issue with SUPER_PDF_TOTAL_PAGES variable where on text alignment to right, it was added spaces of those characters after parsing. #30
+
 ## 2.0.2.6 - 2024-06-29
 - Added a feature where pdf can have page counter and total variables to show a page counter in pdf file.
 
