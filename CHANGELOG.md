@@ -1,6 +1,9 @@
 # Changelog
 
-## 1.1.2 - 2025-10-03
+## 1.1.3 - 2025-12-06
+- Fixed an issue where in DomPDF v3, Root directory is not auto assigned from dompdf library.
+
+## 1.1.2 - 2025-12-03
 - Fixed an issue with SUPER_PDF_TOTAL_PAGES variable where on text alignment to right, it was added spaces of those characters after parsing. #30
 
 ## 1.1.1 - 2024-06-29

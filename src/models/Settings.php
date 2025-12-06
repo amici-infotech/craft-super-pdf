@@ -55,6 +55,12 @@ class Settings extends Model
     public $folder = "";
     public $resaveBehaviour = "duplicate";
 
+    public function init(): void
+    {
+        parent::init();
+        $this->rootDir = $this->rootDir ? $this->rootDir : CRAFT_VENDOR_PATH . '/dompdf/dompdf';
+    }
+
     public function getSettingsNavItems(): array
     {
         $ret = [];
