@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.0.4 - 2025-12-24
+- Reverted DomPDF v3 force back to v2 as there is an issue with `rootDir` that sets blank for custom fonts unless you manually override it in super-pdf.php
+
 ## 5.0.3 - 2025-12-06
 - Fixed an issue where in DomPDF v3, Root directory is not auto assigned from dompdf library.
 
