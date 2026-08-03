@@ -2,7 +2,8 @@
 {% set selectedSubnavItem = 'settings' %}
 {% set title  = navigation[meta.selectedNav].label %}
 {% import 'super-pdf/_macros' as macros %}
-{% set fullPageForm = true %}
+{% set readOnly = readOnly ?? meta.readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
 
 {% macro errorList(errors) %}
     {% if errors %}
@@ -28,27 +29,31 @@
 		    <br>
 		{% endif %}
 
-	    {{ csrfInput() }}
-	    <input type="hidden" name="action" value="{{ meta.action }}">
-	    {{ redirectInput(meta.redirect) }}
+        {% if not readOnly %}
+	        {{ csrfInput() }}
+	        <input type="hidden" name="action" value="{{ meta.action }}">
+	        {{ redirectInput(meta.redirect) }}
+        {% endif %}
 
 		{% namespace 'settings' %}
 			{{ forms.textField({
 			    first: true,
-			    label: "Plugin Name",
+			    label: "Plugin Name"|t('super-pdf'),
 			    name: 'pluginName',
 			    value: settings.pluginName,
 			    required: true,
+			    disabled: readOnly,
 			    errors: (settings is defined ? settings.getErrors('pluginName') : null),
 			    warning: macros.configWarning('pluginName', 'super-pdf'),
 			}) }}
 
 			{{ forms.lightswitchField({
-			    label: 'Enable CP Section' | t('super-pdf'),
-			    instructions: 'Whether to enable Super PDF in the main sidebar navigation.' | t('super-pdf'),
+			    label: 'Enable CP Section'|t('super-pdf'),
+			    instructions: 'Whether to enable Super PDF in the main sidebar navigation.'|t('super-pdf'),
 			    id: 'hasCpSection',
 			    name: 'hasCpSection',
 			    on: settings.hasCpSection,
+			    disabled: readOnly,
 			    errors: (settings is defined ? settings.getErrors('hasCpSection') : null),
 			    warning: macros.configWarning('hasCpSection', 'super-pdf'),
 			}) }}
@@ -63,16 +68,17 @@
                 options: meta.sources,
                 value: settings.volume,
                 required: true,
+                disabled: readOnly,
                 errors: (settings is defined ? settings.getErrors('volume') : null),
                 warning: macros.configWarning('volume', 'super-pdf'),
             }) }}
 
             {{ forms.textField({
-                first: true,
-                label: "Sub Folder",
+                label: "Sub Folder"|t('super-pdf'),
                 name: 'folder',
                 value: settings.folder,
                 required: false,
+                disabled: readOnly,
                 errors: (settings is defined ? settings.getErrors('folder') : null),
                 warning: macros.configWarning('folder', 'super-pdf'),
             }) }}
@@ -94,11 +100,51 @@
                 }],
                 value: settings.resaveBehaviour,
                 required: true,
+                disabled: readOnly,
                 errors: (settings is defined ? settings.getErrors('resaveBehaviour') : null),
                 warning: macros.configWarning('resaveBehaviour', 'super-pdf'),
             }) }}
+
+            {{ forms.textField({
+                label: "Entry PDF Template"|t('super-pdf'),
+                instructions: 'Twig template used by the Download PDF entry action. Leave blank to hide the action. See docs for template tips.'|t('super-pdf'),
+                tip: 'Use a minimal HTML document template (not a CP layout). Console smoke test: php craft super-pdf/generate --template=your/template --filename=test'|t('super-pdf'),
+                id: 'entryPdfTemplate',
+                name: 'entryPdfTemplate',
+                value: settings.entryPdfTemplate,
+                placeholder: 'pdf/entry',
+                disabled: readOnly,
+                errors: (settings is defined ? settings.getErrors('entryPdfTemplate') : null),
+                warning: macros.configWarning('entryPdfTemplate', 'super-pdf'),
+            }) }}
+
+            {{ forms.textField({
+                label: "Signed URL Expiry (seconds)"|t('super-pdf'),
+                instructions: 'How long storage PDF download links remain valid when signatures are used. See Security docs.'|t('super-pdf'),
+                tip: 'Enable “Require signed storage URLs” only after clients can use signed links.'|t('super-pdf'),
+                id: 'signedUrlExpiry',
+                name: 'signedUrlExpiry',
+                value: settings.signedUrlExpiry,
+                type: 'number',
+                disabled: readOnly,
+                errors: (settings is defined ? settings.getErrors('signedUrlExpiry') : null),
+                warning: macros.configWarning('signedUrlExpiry', 'super-pdf'),
+            }) }}
+
+            {{ forms.lightswitchField({
+                label: 'Require signed storage URLs'|t('super-pdf'),
+                instructions: 'When enabled, /super-pdf/{file} links must include a valid signature. Leave off to keep legacy unsigned links working.'|t('super-pdf'),
+                id: 'requireSignedUrls',
+                name: 'requireSignedUrls',
+                on: settings.requireSignedUrls,
+                disabled: readOnly,
+                errors: (settings is defined ? settings.getErrors('requireSignedUrls') : null),
+                warning: macros.configWarning('requireSignedUrls', 'super-pdf'),
+            }) }}
 		{% endnamespace %}
 
-		<button class="btn submit" type="submit">{{ 'Save'|t('super-pdf') }}</button>
+        {% if not readOnly %}
+		    <button class="btn submit" type="submit">{{ 'Save'|t('super-pdf') }}</button>
+        {% endif %}
     </div>
 {% endblock %}

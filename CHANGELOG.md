@@ -1,5 +1,57 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## Unreleased
+
+## 5.1.0 - 2026-08-03
+
+### Added
+- DomPDF 3 support with explicit `rootDir`, `fontDir`, `fontCache`, `tempDir`, and `chroot` defaults under Craft storage.
+- Optional signed, expiring download URLs for PDFs stored in Craft storage (`requireSignedUrls` setting; **default off** for backwards compatibility).
+- PHP service aliases `fromHtml()` / `fromTemplate()` plus Twig/PHP `queueHtml()` / `queueTemplate()` helpers.
+- Queue job `GeneratePdfJob` for asynchronous PDF generation.
+- Output modes: `download`, `string`, and `base64` (in addition to `render` and `object`).
+- Header/footer support via `headerHtml` / `footerHtml` or `headerTemplate` / `footerTemplate`.
+- `{PAGE_COUNT}` placeholder alias for `SUPER_PDF_TOTAL_PAGES`.
+- Clear Caches option for Super PDF font cache.
+- Entry element action **Download PDF** when `entryPdfTemplate` is configured.
+- Settings for signed URL expiry and entry PDF template.
+- `allowedRemoteHosts` DomPDF option passthrough.
+- English translation file.
+- In-repo documentation under `docs/`.
+- Plugin bootstrap class `amici\SuperPdf\Plugin` (legacy `SuperPdf` class retained as a deprecated subclass).
+- PDF and General helpers moved from `libraries/` to first-class `services\` components.
+- Lifecycle events: `Pdf::EVENT_BEFORE_RENDER`, `EVENT_AFTER_RENDER`, `EVENT_BEFORE_SAVE`, `EVENT_AFTER_SAVE`.
+- Email attachment helper `asEmailAttachment()` (PHP + Twig).
+- Console command `php craft super-pdf/generate`.
+- Dev Mode render timing / options logging.
+
+### Changed
+- Storage PDF object URLs include optional signed query parameters (`e`, `s`). Legacy unsigned `/super-pdf/{file}` links still work unless `requireSignedUrls` is enabled.
+- DomPDF options are built through a dedicated `Options` object; plugin settings are no longer passed wholesale into Dompdf.
+- PDF streaming for `render` / `download` uses Dompdf `stream()` + `exit` again (Craft `$app->end()` blank-pages Twig responses).
+- Settings remain viewable when `allowAdminChanges` is false (read-only).
+- Composer support/docs/changelog URLs now point at `amici-infotech/craft-super-pdf`.
+- Plugin version requirement remains Craft CMS 4 and 5 (`^4.0 || ^5.0`).
+- `amici\SuperPdf\libraries\Pdf` / `General` removed; use `amici\SuperPdf\services\Pdf` / `General` (accessed via `Plugin::$plugin->pdf`).
+
+### Deprecated
+- `amici\SuperPdf\SuperPdf` class — use `amici\SuperPdf\Plugin`.
+- `type: url` — use `type: object` (still works with a deprecation log).
+- `streamContext` — use `httpContext` (still works with a deprecation log).
+
+### Security
+- Optional HMAC-signed storage URLs (`requireSignedUrls`).
+- Filename handling rejects path traversal attempts.
+
+### Fixed
+- DomPDF `rootDir` not applied correctly (cause of the 5.0.4 DomPDF 3 revert).
+- Removed `error_reporting` masks from Twig variable methods.
+- Blank page when using `{{ craft.superpdf.html(...) }}` / `template()` with `type: render` (Craft `Application::end()` during template responses).
+
 ## 5.0.4 - 2025-12-24
 - Reverted DomPDF v3 force back to v2 as there is an issue with `rootDir` that sets blank for custom fonts unless you manually override it in super-pdf.php
 
@@ -43,27 +95,7 @@
 - Introducing filesystems so user can store pdfs outside of storage folder.
 - Depending on the settings, We can now set wether we want to regenerate file on each page load, override it or ignore new file creation.
 - Type "url" is deprecated. Use "object" instead.
-- Object can be use with variables or methods to get the URL or other meta data from the file. For example:
-```
-{% set object = craft.superpdf.template("pdf-template", settings, vars) %}
-<!-- File URL -->
-{{ object }}
-{{ object.url }}
-{{ object.getUrl() }}
-<!-- File PATH -->
-{{ object.path }}
-{{ object.getPath() }}
-<!-- Filename -->
-{{ object.filename }}
-{{ object.getFilename() }}
-<!-- Meta data -->
-{{ object.kind }}
-{{ object.size }}
-{{ object.dateModified|date("m/d/Y H:i:s") }}
-<!-- Returns craft assets element. Only if PDF is stored in craft assets volumes instead of storage folder. -->
-{{ object.asset }}
-{{ object.getAsset() }}
-```
+- Object can be use with variables or methods to get the URL or other meta data from the file.
 
 ## 2.0.1 - 2022-08-03
 > {warning} Super PDF now requires DomPdf v2.0.0 or newer.
@@ -76,40 +108,7 @@
 > {warning} Super PDF now requires Craft CMS 4.0.0 or newer.
 
 ## 1.0.7 - 2022-03-09
-- Added new setting `streamContext` where user can pass any HTTP Context. For example:
-```
-'streamContext' => [
-    'ssl' => [
-        'allow_self_signed'=> TRUE,
-        'verify_peer' => FALSE,
-        'verify_peer_name' => FALSE,
-    ]
-]
-```
+- Added new setting `streamContext` where user can pass any HTTP Context.
 
-## 1.0.6 - 2021-11-02
+## 1.0.6 - 2021-xx-xx
 - Added Option to clear pdf cache in craft cms's clear cache utility.
-
-## 1.0.5 - 2021-04-23
-> {warning} Super PDF now requires PHP 7.2.5 or newer.
-
-> {warning} Super PDF now requires Craft CMS 3.6.0 or newer.
-
-> {warning} If Craft Commerce is installed, Super PDF now requires Craft Commerce 3.3.0 or newer due to DomPdf version upgrade in commerce.
-
-## 1.0.4 - 2021-01-08
-- Solved issue where URL pdf type was only working for logged in members.
-
-## 1.0.3 - 2020-10-28
-- Solved Error where Craft v3.5+ throws an error while generating pdf.
-
-## 1.0.2 - 2020-04-15
-- Solved Error where PHP 7.4 shows deprecated error (Invalid characters passed for attempted conversion).
-- Fix Bug with Super PDF where in devMode off, PDF was not rendered.
-
-## 1.0.1 - 2020-03-11
-- Change default Paper Orientation to "portrait".
-- Minor fixes.
-
-## 1.0.0 - 2020-03-07
-- Initial release.
