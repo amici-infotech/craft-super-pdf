@@ -5,14 +5,16 @@ Super PDF turns HTML and Twig templates into PDF files. DomPDF is the default dr
 ## Contents
 
 1. [Installation](installation.md)
-2. [Drivers](drivers.md) — DomPDF vs Browsershot; Node/Puppeteer/Chrome setup (macOS, Ubuntu, DDEV, Docker)
-3. [Concepts](concepts.md)
-4. [Twig usage](twig-usage.md)
-5. [PHP API](php-api.md)
-6. [Backend / CP](backend.md)
-7. [Config reference](config.md)
-8. [Security](security.md)
-9. [Troubleshooting](troubleshooting.md)
+2. [Drivers](drivers.md) — DomPDF vs Browsershot overview; Node/Puppeteer/Chrome setup (macOS, Ubuntu, DDEV, Docker)
+3. [DomPDF guide](dompdf.md) — config, margins, headers, fonts, images, page breaks, page totals
+4. [Browsershot guide](browsershot.md) — tagged PDFs, config, DomPDF-compatible templates, examples
+5. [Concepts](concepts.md)
+6. [Twig usage](twig-usage.md)
+7. [PHP API](php-api.md)
+8. [Backend / CP](backend.md)
+9. [Config reference](config.md)
+10. [Security](security.md)
+11. [Troubleshooting](troubleshooting.md)
 
 ## What you can do
 

@@ -1,341 +1,373 @@
 # Drivers
 
-Super PDF can render PDFs with more than one engine. DomPDF is always available. Browsershot needs Node.js + Puppeteer + Chrome on the machine that runs PHP.
+Super PDF supports two PDF engines. DomPDF is the default. Browsershot is optional and used for tagged / accessible PDFs.
 
-| Driver | Setting | Tagged / accessible PDFs | What Composer installs | What you install manually |
+| Driver | Config | Tagged PDFs | Needs | Usage guide |
 |---|---|---|---|---|
-| **DomPDF** (default) | `driver: 'dompdf'` | No | `dompdf/dompdf` | Nothing extra |
-| **Browsershot** | `driver: 'browsershot'` | Yes (`tagged: true`) | `spatie/browsershot` | Node.js, Puppeteer (npm), Chrome/Chromium |
-
-Front-end Twig stays the same. Only the renderer changes:
+| DomPDF | `driver => 'dompdf'` | No | Nothing extra | **[DomPDF guide](dompdf.md)** |
+| Browsershot | `driver => 'browsershot'` | Yes (`tagged => true`) | Node + npm + Puppeteer + Chrome | **[Browsershot guide](browsershot.md)** |
 
 ```twig
 {{ craft.superpdf.html(html, {
-    filename: 'accessible-doc',
+    filename: 'doc',
     driver: 'browsershot',
     tagged: true
 }) }}
 ```
 
-Or set defaults in [config](config.md) / the CP (**PDF Driver** + **Tagged (accessible) PDF**).
+This page is the **server setup** reference for Browsershot. For templates, margins, fonts, images, page breaks, and page totals, use the per-driver guides above.
+
+Jump to your environment under **Browsershot setup**:
+
+- [Ubuntu (nginx + php-fpm)](#ubuntu-nginx--php-fpm)
+- [macOS (Herd / Valet / nginx)](#macos-herd--valet--nginx)
+- [DDEV](#ddev)
+- [Docker](#docker)
 
 ---
 
 ## DomPDF
 
-No server setup beyond the plugin. Use this unless you need tagged/PDF/UA output.
+No Node/Chrome install. Leave `driver` unset or set:
 
-Limitations relevant to accessibility:
+```php
+// config/super-pdf.php
+'driver' => 'dompdf',
+```
 
-- No structure tree → Acrobat shows **Tagged PDF: No**
-- No catalog `/Lang` from `<html lang="…">`
-- Semantic HTML is used for layout only
-
-Encryption, DomPDF font dirs, and `{TP}` / `SUPER_PDF_TOTAL_PAGES` work as before.
+Use DomPDF unless you need tagged / PDF/UA output. Full usage (config, CSS, fonts, images, headers, page totals): **[DomPDF guide](dompdf.md)**.
 
 ---
 
-## Browsershot (tagged PDFs)
+## Browsershot setup
 
-Composer already pulls in `spatie/browsershot`. That PHP package shells out to Node, which must be able to `require('puppeteer')` and launch Chrome.
+Composer already installs `spatie/browsershot`. You must still install **Node**, **Puppeteer** (npm), and **Chrome** on the machine that runs PHP.
 
-If you see:
+### Config keys (all environments)
 
-```text
-Error: Cannot find module 'puppeteer'
-```
+| Key | Purpose |
+|---|---|
+| `driver` | `'browsershot'` |
+| `tagged` | `true` for accessible/tagged PDFs |
+| `browsershotNodeBinary` | Absolute path to `node` |
+| `browsershotNpmBinary` | Absolute path to `npm` |
+| `browsershotChromePath` | Absolute path to Chrome / Chromium binary |
+| `browsershotNoSandbox` | `true` on DDEV / Docker / some Linux hosts |
+| `browsershotTimeout` | Seconds (optional) |
+| `browsershotShowBackground` | Print CSS backgrounds (default `true`) |
+| `browsershotAllowLocalFileAccess` | Allow local fonts/CSS/images (default `true`) |
+| `browsershotWaitUntilNetworkIdle` | Wait for remote fonts/CSS (default `true`) |
+| `browsershotContentUrl` | Base URL for relative `href` / `src` / `@font-face` paths |
 
-Puppeteer is not installed for the Node process Craft uses. Follow the environment section below.
+### DomPDF template compatibility (summary)
 
-### Quick check (any environment)
+Browsershot accepts the **same HTML/CSS templates** as DomPDF where possible: fixed `header`/`footer` + `@page` margins map to Chromium native chrome + margins (including the outer left/right gutter). Backgrounds, local fonts, and `SUPER_PDF_TOTAL_PAGES` / `.page-number` are handled automatically.
 
-Run these **on the same host that runs `php` / nginx / `ddev` PHP** (not only your laptop terminal if PHP is inside a container):
+Full tables and copy-paste examples: **[Browsershot guide](browsershot.md#dompdf-template-compatibility)**. DomPDF remote images follow HTTP redirects by default — see **[DomPDF guide](dompdf.md#remote-images)**.
+
+Not pixel-identical (Chrome ≠ DomPDF). Same markup should work without a Browsershot-only rewrite.
+
+How to discover paths (run on the **same host** as PHP):
 
 ```bash
-node -v          # ideally Node 20+ (Spatie recommends 22+ for current Browsershot)
-npm -v
 which node
 which npm
-npm root -g      # where global modules live
-node -e "require('puppeteer'); console.log('puppeteer ok')"
+
+# Puppeteer’s Chrome (after npm install puppeteer + browsers install):
+node -e '(async()=>{const p=require("puppeteer"); console.log(await p.executablePath());})()'
+
+# Or system Google Chrome on macOS:
+ls "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 ```
 
-If the last command fails, install Puppeteer using one of the guides below, then re-check.
+Paste those absolute paths into `config/super-pdf.php` (examples in each section below).
 
-### Wire paths in `config/super-pdf.php`
-
-After Node/Chrome work from the CLI, point Super PDF at them if the PHP process cannot find binaries on `$PATH`:
-
-```php
-<?php
-
-use craft\helpers\App;
-
-return [
-    'driver' => 'browsershot',
-    'tagged' => true,
-
-    // Only set these when `which node` / Chrome differ for the PHP user
-    // 'browsershotNodeBinary' => '/usr/local/bin/node',       // Intel Homebrew / Linux
-    // 'browsershotNodeBinary' => '/opt/homebrew/bin/node',    // Apple Silicon Homebrew
-    // 'browsershotNpmBinary' => '/opt/homebrew/bin/npm',
-    // 'browsershotChromePath' => '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-    // 'browsershotChromePath' => '/usr/bin/google-chrome-stable',
-
-    // Docker / DDEV / many Linux AppArmor setups need this:
-    // 'browsershotNoSandbox' => true,
-
-    // 'browsershotTimeout' => 60,
-];
-```
-
-Full key list: [Config reference](config.md).
-
-### Smoke test
+Smoke test after setup:
 
 ```bash
 php craft super-pdf/generate \
-  --html='<!doctype html><html lang="en"><body><h1>Hi</h1><p>Tagged test</p></body></html>' \
+  --html='<!doctype html><html lang="en"><body><h1>Hi</h1></body></html>' \
   --filename=browsershot-smoke \
   --type=object \
   --driver=browsershot \
   --tagged=1
 ```
 
-Open the written PDF in Acrobat → **File → Properties**: **Tagged PDF** should be **Yes** when `tagged` is enabled.
-
 ---
 
-## macOS — direct (nginx / Herd / Valet / php-fpm on the Mac)
+### Ubuntu (nginx + php-fpm)
 
-Use this when Craft’s PHP runs on the Mac itself (not inside Docker/DDEV).
-
-### 1. Install Node.js
-
-**Homebrew (recommended):**
+#### 1. Install Node + npm → set in config
 
 ```bash
-brew install node
-node -v && npm -v
-```
-
-**Or** install the LTS pkg from [nodejs.org](https://nodejs.org/).
-
-Apple Silicon Homebrew binaries usually live under `/opt/homebrew/bin/`. Intel often uses `/usr/local/bin/`.
-
-### 2. Install Puppeteer (project-local, recommended)
-
-From your **Craft project root** (the folder that contains `craft` and `composer.json`):
-
-```bash
-cd /path/to/your-craft-project
-
-# If you do not already have a package.json:
-npm init -y
-
-npm install puppeteer
-npx puppeteer browsers install chrome
-```
-
-Verify:
-
-```bash
-node -e "require('puppeteer'); console.log('puppeteer ok')"
-```
-
-**Alternative — global install** (matches Spatie’s docs; PHP must see the same Node):
-
-```bash
-npm install -g puppeteer
-npx puppeteer browsers install chrome
-node -e "require('puppeteer'); console.log('puppeteer ok')"
-```
-
-Browsershot sets `NODE_PATH=\`npm root -g\`` when calling Node. Global installs are picked up that way; project-local installs resolve from the process cwd / Node module paths. If PHP’s working directory is `web/`, prefer a **global** Puppeteer install **or** keep a project-level `node_modules` and ensure Node can resolve it (see troubleshooting).
-
-Practical recommendation for Craft:
-
-1. Prefer **global** `npm install -g puppeteer` on macOS/nginx so `NODE_PATH` from Browsershot finds it regardless of cwd.
-2. Or install in the project root **and** also run `npm install -g puppeteer` once for the PHP/nginx user.
-
-### 3. Config (only if needed)
-
-```php
-return [
-    'driver' => 'browsershot',
-    'tagged' => true,
-    // Apple Silicon example:
-    // 'browsershotNodeBinary' => '/opt/homebrew/bin/node',
-    // 'browsershotNpmBinary' => '/opt/homebrew/bin/npm',
-];
-```
-
-Herd/Valet usually inherit your shell PATH for CLI `php craft …`. For **nginx + php-fpm**, the FPM pool may have a minimal PATH — set `browsershotNodeBinary` / `browsershotNpmBinary` explicitly.
-
-### 4. Confirm nginx/php-fpm can see Node
-
-```bash
-# As the PHP user if you use one, e.g. _www or the Herd PHP binary:
-php -r 'echo shell_exec("node -v");'
-php -r 'echo shell_exec("npm root -g");'
-```
-
-If those are empty under PHP but work in Terminal, set the binary paths in `config/super-pdf.php`.
-
----
-
-## Ubuntu — direct nginx + php-fpm
-
-Tested pattern follows [Spatie Browsershot requirements](https://spatie.be/docs/browsershot/v4/requirements) (Forge-style Ubuntu).
-
-### 1. Node.js
-
-```bash
-# Example: Node 22 via NodeSource (adjust major version as needed)
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs
+
 node -v && npm -v
+which node   # often /usr/bin/node
+which npm    # often /usr/bin/npm
 ```
 
-Or use your distro’s `nodejs` / `npm` packages if they meet Node 20+.
+```php
+// config/super-pdf.php
+'driver' => 'browsershot',
+'tagged' => true,
+'browsershotNodeBinary' => '/usr/bin/node',
+'browsershotNpmBinary' => '/usr/bin/npm',
+```
 
-### 2. Puppeteer + Chrome
+#### 2. Install Puppeteer → set in config
+
+Install as the **php-fpm user** (often `www-data`) so PHP can resolve the module — not only as root:
 
 ```bash
-sudo npm install -g puppeteer
-sudo npx puppeteer browsers install chrome
+sudo -u www-data npm install -g puppeteer
+
+# Verify (as that user):
+sudo -u www-data node -e "require('puppeteer'); console.log('puppeteer ok')"
+sudo -u www-data npm root -g
 ```
 
-### 3. Chrome shared libraries
+No separate “puppeteer path” config key — Browsershot loads Puppeteer via Node (`NODE_PATH` / global modules). If php-fpm still cannot find it, keep using the same `browsershotNodeBinary` / `browsershotNpmBinary` that own the global install.
 
-**Ubuntu 24.04:**
+Project-local alternative (from Craft root):
+
+```bash
+cd /var/www/your-site
+sudo -u www-data npm init -y
+sudo -u www-data npm install puppeteer
+```
+
+#### 3. Install Chromium / Chrome → set in config
+
+```bash
+# Downloads Puppeteer’s “Chrome for Testing”
+sudo -u www-data npx puppeteer browsers install chrome
+
+# Print the binary path:
+sudo -u www-data node -e '(async()=>{const p=require("puppeteer"); console.log(await p.executablePath());})()'
+```
+
+Also install OS libraries (Ubuntu 24.04):
 
 ```bash
 sudo apt update
 sudo apt install -y \
   libasound2t64 libatk1.0-0 libatk-bridge2.0-0 libcairo2 libcups2 \
-  libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc-s1 libglib2.0-0 \
-  libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0 \
-  libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 \
-  libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 \
-  libxss1 libxtst6 ca-certificates fonts-liberation
+  libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libglib2.0-0 \
+  libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libx11-6 libxcb1 \
+  libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 \
+  fonts-liberation ca-certificates
 ```
 
-**Ubuntu 22.04:** use `libasound2` instead of `libasound2t64`.
+On Ubuntu 22.04 use `libasound2` instead of `libasound2t64`.
 
-### 4. AppArmor / sandbox (Ubuntu 23.10+)
-
-If Chrome errors with *No usable sandbox* / AppArmor user-namespace restrictions:
-
-```bash
-# /etc/sysctl.d/99-browsershot.conf
-echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee /etc/sysctl.d/99-browsershot.conf
-echo 'kernel.apparmor_restrict_unprivileged_unconfined=0' | sudo tee -a /etc/sysctl.d/99-browsershot.conf
-sudo sysctl --system
-```
-
-And/or in Craft:
+If Chrome reports sandbox / AppArmor errors:
 
 ```php
 'browsershotNoSandbox' => true,
 ```
 
-### 5. Config for php-fpm
+Optional sysctl (Ubuntu 23.10+):
+
+```bash
+echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee /etc/sysctl.d/99-browsershot.conf
+echo 'kernel.apparmor_restrict_unprivileged_unconfined=0' | sudo tee -a /etc/sysctl.d/99-browsershot.conf
+sudo sysctl --system
+```
+
+Full Ubuntu example config:
 
 ```php
+<?php
+
 return [
     'driver' => 'browsershot',
     'tagged' => true,
     'browsershotNodeBinary' => '/usr/bin/node',
     'browsershotNpmBinary' => '/usr/bin/npm',
-    // 'browsershotNoSandbox' => true,
-];
-```
-
-Ensure the `www-data` (or php-fpm) user can execute Node and read the Puppeteer Chrome cache (often under `/root/.cache/puppeteer` when installed with `sudo` — that can break FPM). Prefer installing Puppeteer as the deploy user, or set a shared cache:
-
-```bash
-# Install as the deploy / php user instead of root when possible
-sudo -u www-data npm install -g puppeteer
-sudo -u www-data npx puppeteer browsers install chrome
-```
-
-Or set `PUPPETEER_CACHE_DIR` to a directory readable by php-fpm and reinstall Chrome there.
-
-### 6. Reload PHP
-
-```bash
-sudo systemctl reload php8.3-fpm   # adjust version
-# or
-sudo systemctl reload nginx
-```
-
----
-
-## DDEV
-
-PHP and Node usually run **inside** the DDEV web container. Install Puppeteer there, not only on the host Mac/Linux.
-
-### 1. Confirm Node inside DDEV
-
-```bash
-ddev exec node -v
-ddev exec npm -v
-```
-
-DDEV’s web image includes Node. If missing, add a [Node.js build](https://ddev.readthedocs.io/en/stable/users/extend/customization-extendibility/) or use `ddev nvm` / an addon.
-
-### 2. Install Puppeteer inside the project (persists on the mount)
-
-```bash
-ddev exec bash -c 'cd /var/www/html && npm init -y && npm install puppeteer'
-ddev exec bash -c 'cd /var/www/html && npx puppeteer browsers install chrome'
-ddev exec bash -c 'cd /var/www/html && node -e "require(\"puppeteer\"); console.log(\"puppeteer ok\")"'
-```
-
-Add `node_modules/` and Puppeteer’s browser cache to `.gitignore` if they grow large (or use a global install inside the container via a custom Dockerfile — see Docker section).
-
-### 3. Linux deps + no-sandbox
-
-Chromium inside DDEV often needs sandbox disabled:
-
-`config/super-pdf.php`:
-
-```php
-return [
-    'driver' => 'browsershot',
-    'tagged' => true,
+    // Paste from: node -e '(async()=>{const p=require("puppeteer"); console.log(await p.executablePath());})()'
+    'browsershotChromePath' => '/home/www-data/.cache/puppeteer/chrome/.../chrome',
     'browsershotNoSandbox' => true,
 ];
 ```
 
-If Chrome fails on missing `.so` libraries, add packages via `.ddev/config.yaml`:
+Reload PHP after changes:
+
+```bash
+sudo systemctl reload php8.3-fpm   # adjust version
+```
+
+---
+
+### macOS (Herd / Valet / nginx)
+
+#### 1. Install Node + npm → set in config
+
+**Homebrew:**
+
+```bash
+brew install node
+which node
+which npm
+# Apple Silicon often: /opt/homebrew/bin/node
+# Intel often:         /usr/local/bin/node
+```
+
+**nvm** (your machine):
+
+```bash
+nvm install 24
+nvm use 24
+which node   # e.g. /Users/YOU/.nvm/versions/node/v24.2.0/bin/node
+which npm
+```
+
+```php
+// config/super-pdf.php — nvm example
+'driver' => 'browsershot',
+'tagged' => true,
+'browsershotNodeBinary' => '/Users/YOU/.nvm/versions/node/v24.2.0/bin/node',
+'browsershotNpmBinary' => '/Users/YOU/.nvm/versions/node/v24.2.0/bin/npm',
+```
+
+```php
+// Homebrew Apple Silicon example
+'browsershotNodeBinary' => '/opt/homebrew/bin/node',
+'browsershotNpmBinary' => '/opt/homebrew/bin/npm',
+```
+
+php-fpm / nginx often **do not** load nvm. Always set absolute `browsershotNodeBinary` / `browsershotNpmBinary` when using nvm.
+
+#### 2. Install Puppeteer → set in config
+
+From the Craft project root (recommended with nvm):
+
+```bash
+cd /path/to/craft-project
+nvm use 24          # same Node you put in config
+npm init -y         # once
+npm install puppeteer
+node -e "require('puppeteer'); console.log('puppeteer ok')"
+```
+
+Or globally (works well with Browsershot’s `NODE_PATH=\`npm root -g\``):
+
+```bash
+npm install -g puppeteer
+node -e "require('puppeteer'); console.log('puppeteer ok')"
+```
+
+Again: no dedicated puppeteer path key — Node must resolve the package. Keep Node/npm binaries in config pointed at the Node that has Puppeteer installed.
+
+#### 3. Install Chromium / Chrome → set in config
+
+```bash
+npx puppeteer browsers install chrome
+
+# Puppeteer Chrome path (preferred):
+node -e '(async()=>{const p=require("puppeteer"); console.log(await p.executablePath());})()'
+```
+
+Example output on Apple Silicon:
+
+```text
+/Users/YOU/.cache/puppeteer/chrome/mac_arm-…/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing
+```
+
+System Chrome (optional fallback):
+
+```bash
+ls "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+```
+
+```php
+<?php
+
+return [
+    'driver' => 'browsershot',
+    'tagged' => true,
+    'browsershotNodeBinary' => '/Users/YOU/.nvm/versions/node/v24.2.0/bin/node',
+    'browsershotNpmBinary' => '/Users/YOU/.nvm/versions/node/v24.2.0/bin/npm',
+    'browsershotChromePath' => '/Users/YOU/.cache/puppeteer/chrome/mac_arm-157.0.8103.50/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing',
+    // or:
+    // 'browsershotChromePath' => '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+];
+```
+
+Verify PHP can run that Node:
+
+```bash
+php -r 'echo shell_exec("/Users/YOU/.nvm/versions/node/v24.2.0/bin/node -v");'
+```
+
+---
+
+### DDEV
+
+PHP/Node run **inside** the DDEV web container. Install everything with `ddev exec`, not only on the host Mac.
+
+#### 1. Install Node + npm → set in config
+
+```bash
+ddev exec node -v
+ddev exec npm -v
+ddev exec which node   # often /usr/bin/node
+ddev exec which npm
+```
+
+If Node is missing, enable it via DDEV docs / an addon, then `ddev restart`.
+
+```php
+'driver' => 'browsershot',
+'tagged' => true,
+'browsershotNodeBinary' => '/usr/bin/node',
+'browsershotNpmBinary' => '/usr/bin/npm',
+'browsershotNoSandbox' => true,
+```
+
+#### 2. Install Puppeteer → set in config
+
+```bash
+ddev exec bash -c 'cd /var/www/html && npm init -y && npm install puppeteer'
+ddev exec bash -c 'cd /var/www/html && node -e "require(\"puppeteer\"); console.log(\"puppeteer ok\")"'
+```
+
+(No puppeteer path key — project `node_modules` must be visible inside the container.)
+
+#### 3. Install Chromium / Chrome → set in config
+
+```bash
+ddev exec bash -c 'cd /var/www/html && npx puppeteer browsers install chrome'
+ddev exec bash -c 'cd /var/www/html && node -e "(async()=>{const p=require(\"puppeteer\"); console.log(await p.executablePath());})()"'
+```
+
+If libraries are missing, add to `.ddev/config.yaml` then `ddev restart`:
 
 ```yaml
 webimage_extra_packages:
   - libnss3
   - libatk-bridge2.0-0
   - libcups2
-  - libdrm2
-  - libxkbcommon0
-  - libxcomposite1
-  - libxdamage1
-  - libxfixes3
-  - libxrandr2
   - libgbm1
   - libasound2t64
   - fonts-liberation
 ```
 
-Then:
+```php
+<?php
 
-```bash
-ddev restart
+return [
+    'driver' => 'browsershot',
+    'tagged' => true,
+    'browsershotNodeBinary' => '/usr/bin/node',
+    'browsershotNpmBinary' => '/usr/bin/npm',
+    'browsershotChromePath' => '/var/www/html/.cache/puppeteer/chrome/.../chrome', // paste from executablePath()
+    'browsershotNoSandbox' => true,
+];
 ```
 
-(On older Ubuntu-based images use `libasound2` instead of `libasound2t64`.)
-
-### 4. Smoke test inside DDEV
+Smoke test:
 
 ```bash
 ddev exec php craft super-pdf/generate \
@@ -348,76 +380,76 @@ ddev exec php craft super-pdf/generate \
 
 ---
 
-## Docker (generic Craft image / production container)
+### Docker
 
-Goal: bake Node + Puppeteer + Chrome into the **same image** that runs `php-fpm` / the Craft app, so workers and web share one environment.
+Bake Node + Puppeteer + Chrome into the **same image** that runs Craft PHP (and queue workers).
 
-### Dockerfile sketch
+#### 1. Install Node + npm → set in config
+
+In the Dockerfile (Debian/Ubuntu base):
 
 ```dockerfile
-# After your PHP base image…
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl ca-certificates gnupg \
-    libasound2t64 libatk1.0-0 libatk-bridge2.0-0 libcairo2 libcups2 \
-    libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libglib2.0-0 \
-    libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libx11-6 libxcb1 \
-    libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 \
-    fonts-liberation \
-  && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-  && apt-get install -y nodejs \
-  && npm install -g puppeteer \
-  && npx puppeteer browsers install chrome \
-  && rm -rf /var/lib/apt/lists/*
-
-ENV PUPPETEER_CACHE_DIR=/var/cache/puppeteer
-# Ensure the PHP user can read the cache; chown as needed
-
-USER www-data
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+  && apt-get install -y nodejs
 ```
 
-Persist `PUPPETEER_CACHE_DIR` on the image (not a disposable tmpfs home directory).
+```php
+'browsershotNodeBinary' => '/usr/bin/node',
+'browsershotNpmBinary' => '/usr/bin/npm',
+```
 
-### Craft config in containers
+#### 2. Install Puppeteer → set in config
+
+```dockerfile
+ENV PUPPETEER_CACHE_DIR=/var/cache/puppeteer
+RUN npm install -g puppeteer \
+  && mkdir -p /var/cache/puppeteer \
+  && chmod -R a+rx /var/cache/puppeteer
+```
+
+#### 3. Install Chromium / Chrome → set in config
+
+```dockerfile
+RUN npx puppeteer browsers install chrome \
+  && apt-get update && apt-get install -y --no-install-recommends \
+    libasound2t64 libatk1.0-0 libatk-bridge2.0-0 libcups2 libgbm1 \
+    libnss3 libnspr4 libx11-6 libxcb1 libxcomposite1 libxdamage1 \
+    libxrandr2 fonts-liberation ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+```
+
+Inside a running container, print Chrome path:
+
+```bash
+docker compose exec php node -e '(async()=>{const p=require("puppeteer"); console.log(await p.executablePath());})()'
+```
 
 ```php
+<?php
+
 return [
     'driver' => 'browsershot',
     'tagged' => true,
     'browsershotNodeBinary' => '/usr/bin/node',
     'browsershotNpmBinary' => '/usr/bin/npm',
+    'browsershotChromePath' => '/var/cache/puppeteer/chrome/.../chrome', // paste from executablePath()
     'browsershotNoSandbox' => true,
 ];
 ```
 
-### Compose tip
-
-Run queue workers from the **same** image/service definition as PHP so they also have Puppeteer. A slim CLI image without Node will fail Browsershot jobs.
+Use the same image for queue workers so Browsershot jobs do not fail in a slim CLI container.
 
 ---
 
-## Choosing an install style
+## Troubleshooting
 
-| Environment | Recommended Puppeteer install | Typical config flags |
-|---|---|---|
-| macOS + Herd/Valet/nginx | `npm install -g puppeteer` + `npx puppeteer browsers install chrome` | Node paths if FPM PATH is minimal |
-| Ubuntu + nginx | Global puppeteer **as the php-fpm user**, Chrome libs via apt | `browsershotNoSandbox` / sysctl if AppArmor blocks |
-| DDEV | `ddev exec` project `npm install puppeteer` | `browsershotNoSandbox: true` + extra packages |
-| Docker | Global puppeteer in Dockerfile + `PUPPETEER_CACHE_DIR` on the image | `browsershotNoSandbox: true` |
-
----
-
-## Troubleshooting (Browsershot)
-
-| Symptom | Likely fix |
+| Error | Fix |
 |---|---|
-| `Cannot find module 'puppeteer'` | Install Puppeteer globally or in the project; ensure the **PHP host** has it (`ddev exec` / container, not only the host Mac). |
-| `Could not find Chrome` | Run `npx puppeteer browsers install chrome`; fix cache dir / permissions; set `browsershotChromePath` if using system Chrome. |
-| `No usable sandbox` / AppArmor | `browsershotNoSandbox: true` and/or sysctl lines in the Ubuntu section. |
-| Works in CLI, fails in browser | php-fpm PATH or user differs — set `browsershotNodeBinary` / `browsershotNpmBinary`; install Puppeteer for that user. |
-| Queue job fails, web works | Worker container/image missing Node/Puppeteer — align images. |
-| Encryption ignored | Expected — encryption is DomPDF-only. |
+| `Cannot find module 'puppeteer'` | Install Puppeteer with the **same** Node as `browsershotNodeBinary` (project or global). |
+| `Could not find Chrome` | Run `npx puppeteer browsers install chrome` and set `browsershotChromePath` from `executablePath()`. |
+| Works in Terminal, fails in browser | php-fpm PATH/user differs — set absolute Node/npm/Chrome paths in config. |
+| `No usable sandbox` | `'browsershotNoSandbox' => true` |
+| Encryption ignored | DomPDF-only; expected with Browsershot |
 
-More general PDF issues: [Troubleshooting](troubleshooting.md).
-
-Upstream reference: [Spatie Browsershot requirements](https://spatie.be/docs/browsershot/v4/requirements).
+Upstream: [Spatie Browsershot requirements](https://spatie.be/docs/browsershot/v4/requirements).

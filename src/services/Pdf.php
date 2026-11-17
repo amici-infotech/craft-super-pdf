@@ -101,6 +101,10 @@ class Pdf extends Component
         'browsershotNoSandbox',
         'browsershotTimeout',
         'browsershotMargins',
+        'browsershotShowBackground',
+        'browsershotAllowLocalFileAccess',
+        'browsershotWaitUntilNetworkIdle',
+        'browsershotContentUrl',
     ];
 
     // Public Properties
@@ -236,8 +240,9 @@ class Pdf extends Component
         $this->html = $html;
         $this->template = null;
         $this->vars = [];
-        $this->prepareHtmlPlaceholders();
+        // Chrome first so SUPER_PDF_TOTAL_PAGES inside header/footer is normalized too
         $this->prepareChrome();
+        $this->prepareHtmlPlaceholders();
 
         return $this->_generate();
     }
@@ -264,8 +269,9 @@ class Pdf extends Component
 
         if ($needsRender) {
             $this->html = Craft::$app->getView()->renderPageTemplate($template, $vars);
-            $this->prepareHtmlPlaceholders();
+            // Chrome first so SUPER_PDF_TOTAL_PAGES inside header/footer is normalized too
             $this->prepareChrome($vars);
+            $this->prepareHtmlPlaceholders();
         }
 
         return $this->_generate();

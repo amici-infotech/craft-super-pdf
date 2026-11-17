@@ -8,15 +8,22 @@
 - Optional Browsershot config keys: `browsershotNodeBinary`, `browsershotNpmBinary`, `browsershotChromePath`, `browsershotNoSandbox`, `browsershotTimeout`, `browsershotMargins`.
 - Composer requirement for `spatie/browsershot` (installed with the plugin; Node.js / Chrome still needed on the server for that driver).
 - `PdfEvent::$driver` and `PdfEvent::$pdf` on render/save events.
+- Driver usage docs: `docs/dompdf.md` and `docs/browsershot.md` (config, margins, headers, fonts, images, page breaks, page totals).
+- Browsershot asset defaults: `browsershotShowBackground`, `browsershotAllowLocalFileAccess`, `browsershotWaitUntilNetworkIdle`, `browsershotContentUrl`.
 
 ### Changed
 - DomPDF-specific render logic lives in `drivers\DompdfDriver`; `services\Pdf` dispatches via `DriverFactory`.
 - Twig/PHP APIs (`craft.superpdf.html` / `template`, queue, console) are unchanged; default driver remains DomPDF.
 
+### Fixed
+- DomPDF remote images that follow HTTP redirects (e.g. CDN 302s) now load; default `httpContext` enables redirect following for curl.
+- `SUPER_PDF_TOTAL_PAGES` / `{PAGE_COUNT}` inside `headerHtml` / `footerHtml` are normalized after chrome injection so totals replace correctly.
+- Browsershot DomPDF-compatible templates: fixed header/footer map to Chromium chrome with matching outer left/right gutters from `@page` margins.
+
 ### Notes
 - DomPDF still does not support tagged/PDF/UA output. Use `driver: 'browsershot'` with `tagged: true` for accessible PDFs (requires Node.js, Puppeteer, and Chrome/Chromium).
 - PDF encryption remains DomPDF-only; it is skipped with a log message when Browsershot is selected.
-- Driver setup docs: `docs/drivers.md` (macOS, Ubuntu + nginx, DDEV, Docker).
+- Driver setup: `docs/drivers.md`. Usage guides: `docs/dompdf.md`, `docs/browsershot.md`.
 
 ## 5.1.0 - 2026-08-03
 

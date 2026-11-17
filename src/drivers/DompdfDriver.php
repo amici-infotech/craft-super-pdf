@@ -68,15 +68,7 @@ class DompdfDriver implements PdfDriverInterface
             $settings['defaultPaperOrientation'] ?? 'portrait'
         );
 
-        if (!empty($settings['httpContext'])) {
-            $dompdf->setHttpContext($settings['httpContext']);
-        } elseif (!empty($settings['streamContext'])) {
-            Craft::$app->getDeprecator()->log(
-                'streamContext',
-                'PDF Settings `streamContext` is deprecated. Use `httpContext` instead.'
-            );
-            $dompdf->setHttpContext(stream_context_create($settings['streamContext']));
-        }
+        $dompdf->setHttpContext($this->buildHttpContext($settings));
 
         $dompdf->loadHtml($html);
         $dompdf->render();
@@ -93,6 +85,47 @@ class DompdfDriver implements PdfDriverInterface
         $bytes = $dompdf->output(['compress' => (int)$compress]);
 
         return new RenderResult($bytes, $dompdf, 'dompdf');
+    }
+
+    /**
+     * Builds an HTTP stream context for remote CSS/images.
+     *
+     * DomPDF prefers curl when available, and curl does not follow redirects
+     * unless follow_location / max_redirects are set — which breaks hosts like
+     * picsum.photos that 302 to a CDN.
+     *
+     * @param array $settings Merged settings.
+     * @return resource|array
+     */
+    private function buildHttpContext(array $settings)
+    {
+        $defaults = [
+            'http' => [
+                'follow_location' => 1,
+                'max_redirects' => 10,
+                'user_agent' => 'Mozilla/5.0 (compatible; CraftSuperPdf/DomPDF)',
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+            ],
+            'curl' => [
+                'max_redirects' => 10,
+            ],
+        ];
+
+        $custom = [];
+        if (!empty($settings['httpContext']) && is_array($settings['httpContext'])) {
+            $custom = $settings['httpContext'];
+        } elseif (!empty($settings['streamContext']) && is_array($settings['streamContext'])) {
+            Craft::$app->getDeprecator()->log(
+                'streamContext',
+                'PDF Settings `streamContext` is deprecated. Use `httpContext` instead.'
+            );
+            $custom = $settings['streamContext'];
+        }
+
+        return array_replace_recursive($defaults, $custom);
     }
 
     /**

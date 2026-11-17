@@ -98,6 +98,26 @@ class Settings extends Model
      */
     public ?array $browsershotMargins = null;
 
+    /**
+     * @var bool Print CSS backgrounds (Chrome disables them by default).
+     */
+    public bool $browsershotShowBackground = true;
+
+    /**
+     * @var bool Allow local file:// CSS, fonts, and images from trusted HTML.
+     */
+    public bool $browsershotAllowLocalFileAccess = true;
+
+    /**
+     * @var bool Wait until network is idle (helps remote/webfont CSS finish loading).
+     */
+    public bool $browsershotWaitUntilNetworkIdle = true;
+
+    /**
+     * @var string|null Base URL for resolving relative CSS/font/image paths (e.g. site URL).
+     */
+    public ?string $browsershotContentUrl = null;
+
     // DomPDF paths / options
     // =========================================================================
 

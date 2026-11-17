@@ -38,6 +38,10 @@ return [
     // 'browsershotNoSandbox' => true,                         // DDEV / Docker / some Ubuntu hosts
     // 'browsershotTimeout' => 60,
     // 'browsershotMargins' => ['top' => 10, 'right' => 10, 'bottom' => 10, 'left' => 10, 'unit' => 'mm'],
+    // 'browsershotShowBackground' => true,                    // print CSS backgrounds (default true)
+    // 'browsershotAllowLocalFileAccess' => true,              // local @font-face / CSS / images (default true)
+    // 'browsershotWaitUntilNetworkIdle' => true,              // wait for remote fonts/CSS (default true)
+    // 'browsershotContentUrl' => 'https://example.test/',     // base URL for relative asset paths
 
     // DomPDF
     'defaultPaperSize' => 'A4',
@@ -89,9 +93,8 @@ Per-call Twig/PHP `$settings` override these values for a single generation.
 
 DomPDF needs no extra server packages. Browsershot needs Node.js, the **puppeteer** npm package, and Chrome on the PHP host.
 
-Step-by-step install guides (macOS direct, Ubuntu + nginx, DDEV, Docker) and which `browsershot*` keys to set:
-
-→ **[Drivers](drivers.md)**
+- Usage guides: **[DomPDF](dompdf.md)** · **[Browsershot](browsershot.md)**  
+- Install (macOS / Ubuntu / DDEV / Docker) + `browsershot*` keys: **[Drivers](drivers.md)**
 
 ## Common path override
 

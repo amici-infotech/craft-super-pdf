@@ -23,7 +23,10 @@ Settings come from (lowest → highest priority):
 | `dompdf` (default) | DomPDF 3 | No | None (bundled) |
 | `browsershot` | Headless Chrome via Spatie Browsershot | Yes (`tagged: true`) | Node / Puppeteer / Chrome (see [Drivers](drivers.md)) |
 
-Existing installs keep DomPDF until you change `driver` in the CP, config, or a per-call settings array. Server setup for Browsershot (macOS, Ubuntu, DDEV, Docker): **[Drivers](drivers.md)**.
+Existing installs keep DomPDF until you change `driver` in the CP, config, or a per-call settings array.
+
+- Usage: **[DomPDF guide](dompdf.md)** · **[Browsershot guide](browsershot.md)**  
+- Server setup for Browsershot: **[Drivers](drivers.md)**
 
 ## Generation flow
 
