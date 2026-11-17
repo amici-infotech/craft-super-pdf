@@ -1,14 +1,16 @@
 # Super PDF Plugin for Craft CMS 4 / 5
 
-Create PDF files from HTML or Twig templates with DomPDF. Twig-first API, storage/volume persistence, queue support, lifecycle events, and optional signed download URLs.
+Create PDF files from HTML or Twig templates. DomPDF is the default engine; optional Browsershot (headless Chrome) supports tagged/accessible PDFs. Twig-first API, storage/volume persistence, queue support, lifecycle events, and optional signed download URLs.
 
 ### Requirements
 - PHP 8.1 or higher
 - Craft CMS 4.0 or 5.0
 - DOM and MBString extensions (GD recommended)
+- Node/Chrome on the server when using the Browsershot driver (`spatie/browsershot` is required by Composer)
 
 ### Features
 - Generate PDFs from HTML or Twig templates
+- Pluggable drivers: DomPDF (default) and Browsershot (tagged PDFs)
 - Output modes: `render`, `download`, `object`, `string`, `base64`
 - Save to Craft storage or an asset volume
 - Optional signed, expiring storage download links
@@ -18,7 +20,7 @@ Create PDF files from HTML or Twig templates with DomPDF. Twig-first API, storag
 - Header & footer HTML or Twig partials
 - Page total placeholder (`SUPER_PDF_TOTAL_PAGES` / `{PAGE_COUNT}`)
 - Lifecycle events (`beforeRender`, `afterRender`, `beforeSave`, `afterSave`)
-- Encryption and permission flags
+- Encryption and permission flags (DomPDF)
 - Entry “Download PDF” CP action
 - DomPDF 3 with configurable font/temp directories
 
@@ -64,6 +66,7 @@ php craft super-pdf/generate --template=_pdf/invoice --filename=smoke --type=obj
 
 ### Documentation
 - In-repo docs: [`docs/README.md`](docs/README.md)
+- Drivers (DomPDF / Browsershot + Node/Puppeteer/Chrome): [`docs/drivers.md`](docs/drivers.md)
 - Online: [docs.amiciinfotech.com/craft-cms/super-pdf](https://docs.amiciinfotech.com/craft-cms/super-pdf)
 
 ### Support

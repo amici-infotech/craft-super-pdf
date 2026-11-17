@@ -19,9 +19,21 @@ Then install the plugin in **Settings → Plugins**.
 
 PHP extensions: DOM, MBString, GD (recommended for images).
 
+### Browsershot (tagged / accessible PDFs)
+
+`spatie/browsershot` is installed with the plugin. You still need **Node.js + Puppeteer + Chrome** on the machine that runs PHP.
+
+Follow the step-by-step guides in **[Drivers](drivers.md)** (macOS direct, Ubuntu + nginx, DDEV, Docker), then set `driver` / `tagged` in the CP or [`config/super-pdf.php`](config.md).
+
 ## Optional config
 
-Create [`config/super-pdf.php`](config.md) to override CP settings and DomPDF options (fonts, paper, encryption, remote hosts, and more).
+Create [`config/super-pdf.php`](config.md) to override CP settings, choose a PDF driver, and DomPDF/Browsershot options (fonts, paper, encryption, remote hosts, and more).
+
+## After upgrading to 5.2.0
+
+1. Run `composer update amici/craft-super-pdf` so `spatie/browsershot` is installed. DomPDF remains the default driver.
+2. To enable tagged PDFs: follow [Drivers → Browsershot](drivers.md), then set `driver` → Browsershot and enable **Tagged (accessible) PDF**.
+3. Existing Twig/PHP calls keep working unchanged.
 
 ## After upgrading to 5.1.0
 

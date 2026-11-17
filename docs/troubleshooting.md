@@ -47,7 +47,49 @@ body, p, h1, h2, h3 {
 
 ## Blank HTML page instead of PDF
 
-`type: render` / `download` must stream via Dompdf and exit. If you see an empty `text/html` page, confirm you are on Super PDF **5.1.0+** (older mid-request `Craft::$app->end()` attempts blanked Twig responses).
+`type: render` / `download` must stream the PDF and exit. If you see an empty `text/html` page, confirm you are on Super PDF **5.1.0+** (older mid-request `Craft::$app->end()` attempts blanked Twig responses).
+
+## Tagged / accessible PDFs (PDF/UA)
+
+DomPDF does **not** write a structure tree or catalog `/Lang`, so PDFs fail PAC / Acrobat “Tagged PDF: No”.
+
+Use the Browsershot driver — full install steps by OS/environment: **[Drivers](drivers.md)**.
+
+```twig
+{{ craft.superpdf.html(html, {
+    filename: 'accessible-doc',
+    driver: 'browsershot',
+    tagged: true,
+    type: 'object'
+}) }}
+```
+
+## Browsershot fails (`Cannot find module 'puppeteer'` / Chrome / Node)
+
+That error means the PHP host cannot `require('puppeteer')`. Composer’s `spatie/browsershot` is not enough — install Puppeteer with npm.
+
+See **[Drivers](drivers.md)** for copy-paste steps:
+
+- macOS (nginx / Herd / Valet)
+- Ubuntu + nginx + php-fpm
+- DDEV
+- Docker
+
+Quick checks:
+
+```bash
+node -v && npm -v
+node -e "require('puppeteer'); console.log('ok')"
+# Inside DDEV: ddev exec node -e "require('puppeteer'); console.log('ok')"
+```
+
+- Set `browsershotNodeBinary` / `browsershotNpmBinary` / `browsershotChromePath` in [`config/super-pdf.php`](config.md) when php-fpm PATH differs from your shell.
+- In Docker/DDEV, use `browsershotNoSandbox: true`.
+- Increase `browsershotTimeout` for large documents.
+
+## Encryption with Browsershot
+
+PDF password encryption is DomPDF-only. With Browsershot it is skipped and logged; switch to `driver: 'dompdf'` when you need encryption.
 
 ## Blank or broken PDF content
 

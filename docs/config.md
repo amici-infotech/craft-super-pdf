@@ -25,6 +25,20 @@ return [
     'forceDownload' => false,
     'compress' => true,
 
+    // Driver (default dompdf — safe for existing installs)
+    // Setup for browsershot: see docs/drivers.md (Node, Puppeteer, Chrome)
+    'driver' => 'dompdf', // or 'browsershot'
+    'tagged' => false,    // set true with browsershot for accessible/tagged PDFs
+
+    // Browsershot — only used when driver = browsershot
+    // Install steps: docs/drivers.md (macOS / Ubuntu nginx / DDEV / Docker)
+    // 'browsershotNodeBinary' => '/usr/local/bin/node',       // or /opt/homebrew/bin/node
+    // 'browsershotNpmBinary' => '/usr/local/bin/npm',
+    // 'browsershotChromePath' => '/usr/bin/google-chrome-stable',
+    // 'browsershotNoSandbox' => true,                         // DDEV / Docker / some Ubuntu hosts
+    // 'browsershotTimeout' => 60,
+    // 'browsershotMargins' => ['top' => 10, 'right' => 10, 'bottom' => 10, 'left' => 10, 'unit' => 'mm'],
+
     // DomPDF
     'defaultPaperSize' => 'A4',
     'defaultPaperOrientation' => 'portrait',
@@ -70,6 +84,14 @@ return [
 ```
 
 Per-call Twig/PHP `$settings` override these values for a single generation.
+
+## Drivers & Browsershot server setup
+
+DomPDF needs no extra server packages. Browsershot needs Node.js, the **puppeteer** npm package, and Chrome on the PHP host.
+
+Step-by-step install guides (macOS direct, Ubuntu + nginx, DDEV, Docker) and which `browsershot*` keys to set:
+
+→ **[Drivers](drivers.md)**
 
 ## Common path override
 

@@ -46,7 +46,7 @@ class Settings extends Component
         }
 
         // Lightswitches omitted from POST are off
-        foreach (['hasCpSection', 'requireSignedUrls'] as $boolSetting) {
+        foreach (['hasCpSection', 'requireSignedUrls', 'tagged'] as $boolSetting) {
             if (is_array($settings) && !array_key_exists($boolSetting, $settings)) {
                 $pluginSettings->{$boolSetting} = false;
             }

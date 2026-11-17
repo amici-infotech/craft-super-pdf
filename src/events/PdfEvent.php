@@ -44,9 +44,19 @@ class PdfEvent extends CancelableEvent
     public array $vars = [];
 
     /**
-     * @var Dompdf|null Dompdf instance after render (after-render / save events).
+     * @var Dompdf|null Dompdf instance after render when using the DomPDF driver.
      */
     public ?Dompdf $dompdf = null;
+
+    /**
+     * @var string|null Driver id used for this generation (`dompdf`, `browsershot`, …).
+     */
+    public ?string $driver = null;
+
+    /**
+     * @var string|null Raw PDF bytes after a successful render (all drivers).
+     */
+    public ?string $pdf = null;
 
     /**
      * @var mixed Generation or save result (asset object, string, etc.).

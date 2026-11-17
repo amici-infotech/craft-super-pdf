@@ -10,6 +10,9 @@ namespace amici\SuperPdf\services;
 
 use Craft;
 use amici\SuperPdf\Plugin;
+use amici\SuperPdf\drivers\DriverFactory;
+use amici\SuperPdf\drivers\PdfDriverInterface;
+use amici\SuperPdf\drivers\RenderResult;
 use amici\SuperPdf\events\PdfEvent;
 use amici\SuperPdf\jobs\GeneratePdfJob;
 use amici\SuperPdf\models\Asset as PdfAsset;
@@ -23,11 +26,10 @@ use craft\helpers\UrlHelper;
 use craft\web\Response;
 
 use Dompdf\Dompdf;
-use Dompdf\Options;
 use yii\base\Exception;
 
 /**
- * PDF generation service (DomPDF render, storage, signing, queue, email helpers).
+ * PDF generation service (multi-driver render, storage, signing, queue, email helpers).
  *
  * @author    Amici Infotech
  * @package   SuperPdf
@@ -36,13 +38,13 @@ use yii\base\Exception;
 class Pdf extends Component
 {
     /**
-     * @event PdfEvent Fired before DomPDF loads and renders HTML.
+     * @event PdfEvent Fired before the PDF driver loads and renders HTML.
      *                 Set `isValid` to false to cancel. Mutate `html` / `settings` as needed.
      */
     public const EVENT_BEFORE_RENDER = 'beforeRender';
 
     /**
-     * @event PdfEvent Fired after DomPDF has rendered (before output/save branching).
+     * @event PdfEvent Fired after the PDF has been rendered (before output/save branching).
      */
     public const EVENT_AFTER_RENDER = 'afterRender';
 
@@ -91,6 +93,14 @@ class Pdf extends Component
         'resaveBehaviour',
         'entryPdfTemplate',
         'allowedRemoteHosts',
+        'driver',
+        'tagged',
+        'browsershotNodeBinary',
+        'browsershotNpmBinary',
+        'browsershotChromePath',
+        'browsershotNoSandbox',
+        'browsershotTimeout',
+        'browsershotMargins',
     ];
 
     // Public Properties
@@ -112,9 +122,19 @@ class Pdf extends Component
     public array $settings = [];
 
     /**
-     * @var Dompdf|null Active Dompdf instance.
+     * @var Dompdf|null Active Dompdf instance when using the DomPDF driver.
      */
     public ?Dompdf $dompdf = null;
+
+    /**
+     * @var string|null Raw PDF bytes from the last successful render.
+     */
+    public ?string $pdfBytes = null;
+
+    /**
+     * @var string|null Driver id used for the last render.
+     */
+    public ?string $driver = null;
 
     /**
      * @var bool Whether Craft Dev Mode is enabled.
@@ -168,6 +188,8 @@ class Pdf extends Component
         $this->path = null;
         $this->asset = null;
         $this->dompdf = null;
+        $this->pdfBytes = null;
+        $this->driver = null;
         $this->html = '';
         $this->template = null;
         $this->vars = [];
@@ -215,7 +237,7 @@ class Pdf extends Component
         $this->template = null;
         $this->vars = [];
         $this->prepareHtmlPlaceholders();
-        $this->injectChrome();
+        $this->prepareChrome();
 
         return $this->_generate();
     }
@@ -243,7 +265,7 @@ class Pdf extends Component
         if ($needsRender) {
             $this->html = Craft::$app->getView()->renderPageTemplate($template, $vars);
             $this->prepareHtmlPlaceholders();
-            $this->injectChrome($vars);
+            $this->prepareChrome($vars);
         }
 
         return $this->_generate();
@@ -335,16 +357,42 @@ class Pdf extends Component
     }
 
     /**
-     * Injects fixed header/footer HTML so DomPDF repeats them on each page.
+     * Resolves header/footer for the active driver.
+     *
+     * DomPDF: injects fixed-position chrome into the HTML.
+     * Browsershot: stores resolved HTML on settings for native header/footer APIs.
      *
      * @param array $vars Variables for header/footer Twig templates.
      * @return void
      */
-    private function injectChrome(array $vars = []): void
+    private function prepareChrome(array $vars = []): void
     {
         $header = $this->resolveChromeHtml('header', $vars);
         $footer = $this->resolveChromeHtml('footer', $vars);
+        $driver = strtolower((string)($this->settings['driver'] ?? DriverFactory::DRIVER_DOMPDF));
 
+        if ($driver === DriverFactory::DRIVER_BROWSERSHOT) {
+            if ($header !== '') {
+                $this->settings['headerHtml'] = $header;
+            }
+            if ($footer !== '') {
+                $this->settings['footerHtml'] = $footer;
+            }
+            return;
+        }
+
+        $this->injectChromeHtml($header, $footer);
+    }
+
+    /**
+     * Injects fixed header/footer HTML so DomPDF repeats them on each page.
+     *
+     * @param string $header Header HTML snippet.
+     * @param string $footer Footer HTML snippet.
+     * @return void
+     */
+    private function injectChromeHtml(string $header, string $footer): void
+    {
         if ($header !== '') {
             $this->html = '<div class="super-pdf-header" style="position:fixed;top:0;left:0;right:0;">'
                 . $header
@@ -383,7 +431,7 @@ class Pdf extends Component
     }
 
     /**
-     * Renders the current HTML with DomPDF and returns the configured output.
+     * Renders the current HTML via the configured driver and returns the output.
      *
      * @return mixed Generation result for the configured `type`, or false on failure.
      */
@@ -396,49 +444,12 @@ class Pdf extends Component
                 }
             }
 
-            // Project config often stores null for unset path keys and overwrites model init() defaults.
-            $storage = FileHelper::normalizePath(Craft::$app->getPath()->getStoragePath() . '/super-pdf');
-            $pathDefaults = [
-                'rootDir' => FileHelper::normalizePath(CRAFT_VENDOR_PATH . '/dompdf/dompdf'),
-                'fontDir' => $storage . '/fonts',
-                'fontCache' => $storage . '/font-cache',
-                'tempDir' => $storage . '/temp',
-            ];
-            foreach ($pathDefaults as $key => $default) {
-                if (empty($this->settings[$key])) {
-                    $this->settings[$key] = $default;
-                }
-            }
-            if (empty($this->settings['chroot'])) {
-                $this->settings['chroot'] = [
-                    FileHelper::normalizePath(CRAFT_BASE_PATH),
-                    $storage,
-                ];
-            }
-
-            $this->ensureRuntimeDirectories();
-            $options = $this->buildDompdfOptions();
-            $this->dompdf = new Dompdf($options);
-            $this->dompdf->setPaper(
-                $this->settings['defaultPaperSize'] ?? 'A4',
-                $this->settings['defaultPaperOrientation'] ?? 'portrait'
-            );
-
-            if (!empty($this->settings['httpContext'])) {
-                $this->dompdf->setHttpContext($this->settings['httpContext']);
-            } elseif (!empty($this->settings['streamContext'])) {
-                Craft::$app->getDeprecator()->log(
-                    'streamContext',
-                    'PDF Settings `streamContext` is deprecated. Use `httpContext` instead.'
-                );
-                $this->dompdf->setHttpContext(stream_context_create($this->settings['streamContext']));
-            }
-
             $before = new PdfEvent([
                 'html' => $this->html,
                 'settings' => $this->settings,
                 'template' => $this->template,
                 'vars' => $this->vars,
+                'driver' => (string)($this->settings['driver'] ?? DriverFactory::DRIVER_DOMPDF),
             ]);
             $this->trigger(self::EVENT_BEFORE_RENDER, $before);
             if (!$before->isValid) {
@@ -448,16 +459,15 @@ class Pdf extends Component
             $this->settings = $before->settings;
 
             $started = microtime(true);
-            $this->dompdf->loadHtml($this->html);
-            $this->dompdf->render();
-
-            if (str_contains($this->html, '{TP}')) {
-                $this->injectPageCount();
+            $driverId = strtolower((string)($this->settings['driver'] ?? DriverFactory::DRIVER_DOMPDF));
+            if ($driverId === '') {
+                $driverId = DriverFactory::DRIVER_DOMPDF;
             }
 
-            if (!empty($this->settings['encrypt'])) {
-                $this->injectEncryption();
-            }
+            /** @var PdfDriverInterface $driver */
+            $driver = DriverFactory::create($driverId);
+            $result = $driver->render($this->html, $this->settings);
+            $this->applyRenderResult($result);
 
             $after = new PdfEvent([
                 'html' => $this->html,
@@ -465,6 +475,8 @@ class Pdf extends Component
                 'template' => $this->template,
                 'vars' => $this->vars,
                 'dompdf' => $this->dompdf,
+                'driver' => $this->driver,
+                'pdf' => $this->pdfBytes,
             ]);
             $this->trigger(self::EVENT_AFTER_RENDER, $after);
             if (!$after->isValid) {
@@ -473,11 +485,11 @@ class Pdf extends Component
 
             if ($this->devMode) {
                 Plugin::info(sprintf(
-                    'Rendered PDF type=%s paper=%s/%s fontDir=%s in %.3fs',
+                    'Rendered PDF driver=%s type=%s paper=%s/%s in %.3fs',
+                    $this->driver ?? $driverId,
                     $this->settings['type'] ?? 'render',
                     $this->settings['defaultPaperSize'] ?? 'A4',
                     $this->settings['defaultPaperOrientation'] ?? 'portrait',
-                    $this->settings['fontDir'] ?? '',
                     microtime(true) - $started
                 ));
             }
@@ -488,8 +500,8 @@ class Pdf extends Component
                 'url' => $this->url(),
                 'object' => $this->object(),
                 'download' => $this->streamResponse(true),
-                'string' => $this->dompdf->output(),
-                'base64' => base64_encode($this->dompdf->output()),
+                'string' => $this->pdfBytes,
+                'base64' => base64_encode((string)$this->pdfBytes),
                 default => $this->streamResponse((bool)($this->settings['forceDownload'] ?? false)),
             };
         } catch (\Throwable $e) {
@@ -505,87 +517,30 @@ class Pdf extends Component
     }
 
     /**
-     * Builds Dompdf Options from runtime settings, excluding Super PDF-only keys.
+     * Stores driver render output on the service for downstream type handlers.
      *
-     * @return Options Configured Dompdf options.
+     * @param RenderResult $result Driver render result.
+     * @return void
      */
-    private function buildDompdfOptions(): Options
+    private function applyRenderResult(RenderResult $result): void
     {
-        $options = new Options();
-        $attributes = $this->settings;
-
-        foreach (self::PLUGIN_SETTING_KEYS as $key) {
-            unset($attributes[$key]);
-        }
-
-        foreach ($attributes as $key => $value) {
-            if ($value === null) {
-                continue;
-            }
-
-            if ($key === 'rootDir') {
-                $options->setRootDir((string)$value);
-                continue;
-            }
-
-            if ($key === 'chroot') {
-                $options->setChroot($value);
-                continue;
-            }
-
-            if ($key === 'tempDir') {
-                $options->setTempDir((string)$value);
-                continue;
-            }
-
-            if ($key === 'fontDir') {
-                $options->setFontDir((string)$value);
-                continue;
-            }
-
-            if ($key === 'fontCache') {
-                $options->setFontCache((string)$value);
-                continue;
-            }
-
-            $options->set($key, $value);
-        }
-
-        if (!empty($this->settings['allowedRemoteHosts']) && method_exists($options, 'setAllowedRemoteHosts')) {
-            $options->setAllowedRemoteHosts($this->settings['allowedRemoteHosts']);
-        } elseif (!empty($this->settings['allowedRemoteHosts'])) {
-            $options->set('allowedRemoteHosts', $this->settings['allowedRemoteHosts']);
-        }
-
-        // Ensure rootDir is always applied (DomPDF 3 regression guard)
-        $rootDir = $this->settings['rootDir'] ?? (CRAFT_VENDOR_PATH . '/dompdf/dompdf');
-        $options->setRootDir(FileHelper::normalizePath((string)$rootDir));
-
-        return $options;
+        $this->pdfBytes = $result->bytes;
+        $this->dompdf = $result->dompdf;
+        $this->driver = $result->driver;
     }
 
     /**
-     * Ensures font/temp directories from settings exist and are writable.
+     * Replaces `{TP}` tokens in the rendered DomPDF document with the total page count.
      *
      * @return void
-     */
-    private function ensureRuntimeDirectories(): void
-    {
-        foreach (['fontDir', 'fontCache', 'tempDir'] as $key) {
-            $path = $this->settings[$key] ?? null;
-            if (is_string($path) && $path !== '') {
-                FileHelper::createDirectory(FileHelper::normalizePath($path));
-            }
-        }
-    }
-
-    /**
-     * Replaces `{TP}` tokens in the rendered PDF with the total page count.
-     *
-     * @return void
+     * @deprecated 5.2.0 Handled inside DompdfDriver; kept for BC when `$dompdf` is set.
      */
     public function injectPageCount(): void
     {
+        if ($this->dompdf === null) {
+            return;
+        }
+
         $canvas = $this->dompdf->getCanvas();
         $pdf = $canvas->get_cpdf();
         $totalPages = $canvas->get_page_count();
@@ -603,9 +558,14 @@ class Pdf extends Component
      * Applies CPDF encryption and permission flags from settings.
      *
      * @return void
+     * @deprecated 5.2.0 Handled inside DompdfDriver; kept for BC when `$dompdf` is set.
      */
     public function injectEncryption(): void
     {
+        if ($this->dompdf === null) {
+            return;
+        }
+
         $allow = [];
         if (!empty($this->settings['print'])) {
             $allow[] = 'print';
@@ -632,26 +592,44 @@ class Pdf extends Component
      *
      * Must not use Craft::$app->end() while a Twig template response is being
      * sent — Craft throws ExitException and the browser gets a blank HTML page.
-     * Dompdf stream() + exit() matches pre-5.1 Twig behaviour.
+     * Dompdf stream() + exit() matches pre-5.1 Twig behaviour for the DomPDF driver.
      */
     private function streamResponse(bool $attachment): mixed
     {
         $filename = pathinfo(($this->settings['filename'] ?? 'pdf') . '.pdf', PATHINFO_FILENAME);
+        $bytes = (string)$this->pdfBytes;
 
         // Console / queue callers cannot stream a browser response
         if (Craft::$app->getRequest()->getIsConsoleRequest()) {
-            return $this->dompdf->output(['compress' => (int)!empty($this->settings['compress'])]);
+            return $bytes;
         }
 
-        // Drop Twig/Craft output buffers so PDF headers/body are clean
+        // Prefer Dompdf stream when available (preserves compress option behaviour)
+        if ($this->dompdf !== null) {
+            while (ob_get_level() > 0) {
+                @ob_end_clean();
+            }
+
+            $this->dompdf->stream($filename, [
+                'Attachment' => $attachment || !empty($this->settings['forceDownload']),
+                'compress' => !empty($this->settings['compress']),
+            ]);
+            exit();
+        }
+
         while (ob_get_level() > 0) {
             @ob_end_clean();
         }
 
-        $this->dompdf->stream($filename, [
-            'Attachment' => $attachment || !empty($this->settings['forceDownload']),
-            'compress' => !empty($this->settings['compress']),
-        ]);
+        $disposition = ($attachment || !empty($this->settings['forceDownload']))
+            ? 'attachment'
+            : 'inline';
+        $safeName = str_replace(['"', "\r", "\n"], '', $filename) . '.pdf';
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: ' . $disposition . '; filename="' . $safeName . '"');
+        header('Content-Length: ' . strlen($bytes));
+        echo $bytes;
         exit();
     }
 
@@ -731,6 +709,8 @@ class Pdf extends Component
             'template' => $this->template,
             'vars' => $this->vars,
             'dompdf' => $this->dompdf,
+            'driver' => $this->driver,
+            'pdf' => $this->pdfBytes,
             'path' => $this->path,
         ]);
         $this->trigger(self::EVENT_BEFORE_SAVE, $beforeSave);
@@ -742,19 +722,11 @@ class Pdf extends Component
             $this->path = $beforeSave->path;
         }
 
-        FileHelper::writeToFile($this->path, $this->dompdf->output());
+        FileHelper::writeToFile($this->path, (string)$this->pdfBytes);
 
         if (($this->settings['volume'] ?? 'storage') === 'storage') {
             $result = $this->createAssetObject();
-            $this->trigger(self::EVENT_AFTER_SAVE, new PdfEvent([
-                'html' => $this->html,
-                'settings' => $this->settings,
-                'template' => $this->template,
-                'vars' => $this->vars,
-                'dompdf' => $this->dompdf,
-                'path' => $this->path,
-                'result' => $result,
-            ]));
+            $this->trigger(self::EVENT_AFTER_SAVE, $this->buildAfterSaveEvent($result));
             return $result;
         }
 
@@ -771,15 +743,7 @@ class Pdf extends Component
             $assetsService->replaceAssetFile($asset, $this->path, $filename);
 
             $result = $this->createAssetObject($asset);
-            $this->trigger(self::EVENT_AFTER_SAVE, new PdfEvent([
-                'html' => $this->html,
-                'settings' => $this->settings,
-                'template' => $this->template,
-                'vars' => $this->vars,
-                'dompdf' => $this->dompdf,
-                'path' => $this->path,
-                'result' => $result,
-            ]));
+            $this->trigger(self::EVENT_AFTER_SAVE, $this->buildAfterSaveEvent($result));
             return $result;
         }
 
@@ -801,16 +765,29 @@ class Pdf extends Component
         }
 
         $result = $this->createAssetObject($asset);
-        $this->trigger(self::EVENT_AFTER_SAVE, new PdfEvent([
+        $this->trigger(self::EVENT_AFTER_SAVE, $this->buildAfterSaveEvent($result));
+        return $result;
+    }
+
+    /**
+     * Builds an after-save event payload for the current generation.
+     *
+     * @param mixed $result Saved asset wrapper.
+     * @return PdfEvent
+     */
+    private function buildAfterSaveEvent(mixed $result): PdfEvent
+    {
+        return new PdfEvent([
             'html' => $this->html,
             'settings' => $this->settings,
             'template' => $this->template,
             'vars' => $this->vars,
             'dompdf' => $this->dompdf,
+            'driver' => $this->driver,
+            'pdf' => $this->pdfBytes,
             'path' => $this->path,
             'result' => $result,
-        ]));
-        return $result;
+        ]);
     }
 
     /**

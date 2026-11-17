@@ -85,7 +85,8 @@ Event::on(Pdf::class, Pdf::EVENT_BEFORE_RENDER, function(PdfEvent $event) {
 });
 
 Event::on(Pdf::class, Pdf::EVENT_AFTER_RENDER, function(PdfEvent $event) {
-    // $event->dompdf is available
+    // $event->dompdf is set for the DomPDF driver; $event->pdf has bytes for all drivers
+    // $event->driver is 'dompdf' or 'browsershot'
 });
 
 Event::on(Pdf::class, Pdf::EVENT_BEFORE_SAVE, function(PdfEvent $event) {
@@ -99,7 +100,7 @@ Event::on(Pdf::class, Pdf::EVENT_AFTER_SAVE, function(PdfEvent $event) {
 
 | Event | When |
 |---|---|
-| `Pdf::EVENT_BEFORE_RENDER` | Before DomPDF `loadHtml` / `render` |
+| `Pdf::EVENT_BEFORE_RENDER` | Before the selected driver renders |
 | `Pdf::EVENT_AFTER_RENDER` | After render, before stream/save/return |
 | `Pdf::EVENT_BEFORE_SAVE` | Before writing `type: object` to storage/volume |
 | `Pdf::EVENT_AFTER_SAVE` | After the asset wrapper is created |
@@ -112,6 +113,7 @@ Event class: `amici\SuperPdf\events\PdfEvent` (cancelable).
 php craft super-pdf/generate --template=_pdf/invoice --filename=smoke
 php craft super-pdf/generate --html="<h1>Hi</h1>" --filename=hi --type=object
 php craft super-pdf/generate --template=_pdf/invoice --elementId=123 --filename=invoice-123
+php craft super-pdf/generate --html="<h1>Hi</h1>" --filename=tagged --driver=browsershot --tagged=1
 ```
 
 | Option | Description |
@@ -121,6 +123,8 @@ php craft super-pdf/generate --template=_pdf/invoice --elementId=123 --filename=
 | `--filename` | Output name without `.pdf` |
 | `--type` | Usually `object` for console |
 | `--elementId` | Loads an entry as `entry` / `element` |
+| `--driver` | `dompdf` (default) or `browsershot` |
+| `--tagged` | `1` / `0` — request tagged PDF (Browsershot) |
 
 ## Signed URLs
 

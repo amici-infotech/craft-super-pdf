@@ -61,6 +61,39 @@
             <hr>
 
             {{ forms.selectField({
+                label: "PDF Driver"|t('super-pdf'),
+                instructions: 'Rendering engine. DomPDF is the default. Browsershot (headless Chrome) supports tagged/accessible PDFs and needs Node.js, Puppeteer, and Chrome/Chromium on the server.'|t('super-pdf'),
+                tip: 'Install Puppeteer/Chrome using the Drivers docs (macOS, Ubuntu, DDEV, Docker). Per-call: { driver: \'browsershot\', tagged: true }'|t('super-pdf'),
+                id: 'driver',
+                name: 'driver',
+                options: [{
+                    'label': 'DomPDF (default)',
+                    'value': 'dompdf'
+                }, {
+                    'label': 'Browsershot (tagged PDFs)',
+                    'value': 'browsershot'
+                }],
+                value: settings.driver ?? 'dompdf',
+                required: true,
+                disabled: readOnly,
+                errors: (settings is defined ? settings.getErrors('driver') : null),
+                warning: macros.configWarning('driver', 'super-pdf'),
+            }) }}
+
+            {{ forms.lightswitchField({
+                label: 'Tagged (accessible) PDF'|t('super-pdf'),
+                instructions: 'Request a tagged PDF when the driver supports it (Browsershot). DomPDF does not support tagged output.'|t('super-pdf'),
+                id: 'tagged',
+                name: 'tagged',
+                on: settings.tagged ?? false,
+                disabled: readOnly,
+                errors: (settings is defined ? settings.getErrors('tagged') : null),
+                warning: macros.configWarning('tagged', 'super-pdf'),
+            }) }}
+
+            <hr>
+
+            {{ forms.selectField({
                 label: "Default PDF Storage Volume"|t('super-pdf'),
                 instructions: 'Default Folder where PDF files will store.'|t('super-pdf'),
                 id: 'volume',

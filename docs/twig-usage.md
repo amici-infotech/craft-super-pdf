@@ -18,6 +18,28 @@ All helpers hang off `craft.superpdf`.
 
 With default `type: render`, this streams a PDF and stops the request (the browser shows/downloads the file).
 
+## Tagged / accessible PDF (Browsershot)
+
+```twig
+{% set html %}
+<!doctype html>
+<html lang="en-GB">
+<body>
+    <h1>Heading</h1>
+    <p>Paragraph text.</p>
+</body>
+</html>
+{% endset %}
+
+{{ craft.superpdf.html(html, {
+    filename: 'test',
+    driver: 'browsershot',
+    tagged: true
+}) }}
+```
+
+Requires Node + Puppeteer + Chrome on the PHP host — see **[Drivers](drivers.md)**. DomPDF remains the default when `driver` is omitted.
+
 ## From a template (save + URL)
 
 ```twig

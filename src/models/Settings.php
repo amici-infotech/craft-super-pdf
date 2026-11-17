@@ -54,6 +54,50 @@ class Settings extends Model
      */
     public bool|string|int $requireSignedUrls = false;
 
+    // Rendering driver
+    // =========================================================================
+
+    /**
+     * @var string PDF engine: `dompdf` (default) or `browsershot`.
+     */
+    public string $driver = 'dompdf';
+
+    /**
+     * @var bool Whether to request a tagged (accessible) PDF when the driver supports it.
+     *           For Browsershot, tagged output is used when this is true (default for that driver if unset at call time).
+     */
+    public bool $tagged = false;
+
+    /**
+     * @var string|null Optional Node binary path for Browsershot.
+     */
+    public ?string $browsershotNodeBinary = null;
+
+    /**
+     * @var string|null Optional npm binary path for Browsershot.
+     */
+    public ?string $browsershotNpmBinary = null;
+
+    /**
+     * @var string|null Optional Chrome/Chromium binary path for Browsershot.
+     */
+    public ?string $browsershotChromePath = null;
+
+    /**
+     * @var bool Whether to pass `--no-sandbox` to Chromium (useful in some CI/Docker setups).
+     */
+    public bool $browsershotNoSandbox = false;
+
+    /**
+     * @var int|null Browsershot timeout in seconds.
+     */
+    public ?int $browsershotTimeout = null;
+
+    /**
+     * @var array|null Optional Browsershot margins: top/right/bottom/left + unit (mm).
+     */
+    public ?array $browsershotMargins = null;
+
     // DomPDF paths / options
     // =========================================================================
 
@@ -382,6 +426,8 @@ class Settings extends Model
             [['signedUrlExpiry'], 'integer', 'min' => 60],
             [['type'], 'in', 'range' => ['render', 'object', 'url', 'download', 'string', 'base64']],
             [['resaveBehaviour'], 'in', 'range' => ['duplicate', 'override', 'ignore']],
+            [['driver'], 'in', 'range' => ['dompdf', 'browsershot']],
+            [['tagged', 'browsershotNoSandbox'], 'boolean'],
         ];
     }
 }

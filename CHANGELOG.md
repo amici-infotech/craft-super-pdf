@@ -1,5 +1,23 @@
 # Changelog
 
+## 5.2.0 - 2026-11-17
+
+### Added
+- Pluggable PDF drivers: **DomPDF** (default) and optional **Browsershot** (headless Chrome).
+- CP / config setting `driver` (`dompdf` | `browsershot`) and `tagged` for accessible/tagged PDF output when using Browsershot.
+- Optional Browsershot config keys: `browsershotNodeBinary`, `browsershotNpmBinary`, `browsershotChromePath`, `browsershotNoSandbox`, `browsershotTimeout`, `browsershotMargins`.
+- Composer requirement for `spatie/browsershot` (installed with the plugin; Node.js / Chrome still needed on the server for that driver).
+- `PdfEvent::$driver` and `PdfEvent::$pdf` on render/save events.
+
+### Changed
+- DomPDF-specific render logic lives in `drivers\DompdfDriver`; `services\Pdf` dispatches via `DriverFactory`.
+- Twig/PHP APIs (`craft.superpdf.html` / `template`, queue, console) are unchanged; default driver remains DomPDF.
+
+### Notes
+- DomPDF still does not support tagged/PDF/UA output. Use `driver: 'browsershot'` with `tagged: true` for accessible PDFs (requires Node.js, Puppeteer, and Chrome/Chromium).
+- PDF encryption remains DomPDF-only; it is skipped with a log message when Browsershot is selected.
+- Driver setup docs: `docs/drivers.md` (macOS, Ubuntu + nginx, DDEV, Docker).
+
 ## 5.1.0 - 2026-08-03
 
 ### Added

@@ -56,6 +56,16 @@ class GenerateController extends Controller
     public string $type = 'object';
 
     /**
+     * @var string|null PDF driver override (`dompdf` or `browsershot`).
+     */
+    public ?string $driver = null;
+
+    /**
+     * @var bool|null Whether to request a tagged PDF (Browsershot).
+     */
+    public ?bool $tagged = null;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
@@ -66,6 +76,8 @@ class GenerateController extends Controller
             'filename',
             'elementId',
             'type',
+            'driver',
+            'tagged',
         ]);
     }
 
@@ -85,6 +97,12 @@ class GenerateController extends Controller
             'filename' => $this->filename,
             'type' => $this->type ?: 'object',
         ];
+        if ($this->driver !== null && $this->driver !== '') {
+            $settings['driver'] = $this->driver;
+        }
+        if ($this->tagged !== null) {
+            $settings['tagged'] = $this->tagged;
+        }
 
         $vars = [];
         if ($this->elementId) {
